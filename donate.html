@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>하린이 후원하기 ☕ — Harin MBTI Clicker</title>
+    <meta name="description" content="하린이에게 마라탕 한 그릇 사주세요! USDT TRC-20으로 간편하게 후원할 수 있어요.">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: radial-gradient(ellipse at top, #1a112e 0%, #0f0f1a 60%);
+            overflow-x: hidden;
+        }
+
+        .donate-page {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* ── 헤더 ── */
+        .donate-header {
+            text-align: center;
+            padding-top: 1rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: #fff;
+        }
+
+        .donate-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #c471ed);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+
+        .donate-header .subtitle {
+            color: #bbb;
+            font-size: 0.9rem;
+        }
+
+        /* ── 캐릭터 아바타 ── */
+        .char-mini {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-image: url('assets/MBTI/standard.webp');
+            background-size: cover;
+            background-position: center top;
+            margin: 0 auto 0.8rem;
+            border: 3px solid rgba(255, 154, 158, 0.4);
+            box-shadow: 0 0 30px rgba(255, 154, 158, 0.2);
+        }
+
+        /* ── 글라스 카드 ── */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ff9a9e;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── 마일스톤 게이지 ── */
+        .milestone-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 0.6rem;
+        }
+
+        .milestone-label {
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .milestone-amount {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ff9a9e;
+        }
+
+        .milestone-track {
+            width: 100%;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            /* overflow: hidden; Removed to allow markers outside */
+        }
+
+        .milestone-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9a9e, #c471ed);
+            border-radius: 10px;
+            transition: width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            width: 0%;
+            position: relative;
+        }
+
+        .milestone-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 10px 10px 0;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .milestone-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-top: 1rem;
+        }
+
+        .milestone-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.88rem;
+            color: #888;
+            transition: color 0.3s, background 0.3s;
+            padding: 0.5rem 0.6rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .milestone-step.achieved {
+            color: #fff;
+            background: rgba(46, 204, 113, 0.07);
+            border-color: rgba(46, 204, 113, 0.25);
+        }
+
+        .step-emoji {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            overflow: visible;
+            transition: background 0.3s;
+        }
+
+        .milestone-step.achieved .step-emoji {
+            background: rgba(46, 204, 113, 0.12);
+        }
+
+        /* 체크 표시: 미달성 = 원형 테두리, 달성 = 초록 채움 + 흰 체크 */
+        .step-check {
+            flex-shrink: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.18);
+            transition: all 0.35s ease;
+            background: transparent;
+        }
+
+        .milestone-step.achieved .step-check {
+            background: #43e97b;
+            border-color: #43e97b;
+            color: #0a2e18;
+            box-shadow: 0 0 10px rgba(67, 233, 123, 0.45);
+        }
+
+        .milestone-note {
+            margin-top: 0.7rem;
+            font-size: 0.72rem;
+            color: #666;
+            text-align: right;
+        }
+
+        /* ── 지갑 섹션 ── */
+        .wallet-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 154, 158, 0.12);
+            border: 1px solid rgba(255, 154, 158, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #ff9a9e;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-badge .dot {
+            width: 7px;
+            height: 7px;
+            background: #ff9a9e;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .qr-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .qr-img {
+            width: 110px;
+            height: 110px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: #fff;
+            padding: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .qr-img img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 6px;
+        }
+
+        .wallet-info {
+            flex: 1;
+        }
+
+        .wallet-network {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .wallet-addr {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.7rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: #eee;
+            word-break: break-all;
+            line-height: 1.5;
+            user-select: text;
+        }
+
+        .qr-hint {
+            font-size: 0.72rem;
+            color: #666;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            width: 100%;
+            margin-top: 0.8rem;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ff9a9e, #c471ed);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 15px rgba(196, 113, 237, 0.35);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.97);
+        }
+
+        .copy-btn:hover {
+            box-shadow: 0 6px 20px rgba(196, 113, 237, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .caution-box {
+            margin-top: 1rem;
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.25);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.78rem;
+            color: #f5c518;
+            line-height: 1.7;
+        }
+
+        /* ── 로딩 스피너 ── */
+        .loading-dots {
+            color: #555;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        /* ── 월별 차트 ── */
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 6px;
+            height: 80px;
+            margin-top: 0.5rem;
+        }
+
+        .bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar-fill {
+            width: 100%;
+            border-radius: 6px 6px 0 0;
+            background: linear-gradient(180deg, #c471ed, #ff9a9e);
+            min-height: 4px;
+            transition: height 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .bar-label {
+            font-size: 0.62rem;
+            color: #777;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .chart-empty {
+            color: #555;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 1rem 0;
+            width: 100%;
+        }
+
+        /* ── Hall of Fame ── */
+        .hof-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .hof-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .hof-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .hof-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 0.65rem 0.8rem;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            animation: hof-in 0.4s ease;
+        }
+
+        @keyframes hof-in {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hof-coin {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .hof-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .hof-nick {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .hof-time {
+            font-size: 0.72rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .hof-amount {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #c471ed;
+            flex-shrink: 0;
+        }
+
+        .hof-empty {
+            color: #555;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        /* ── 실시간 감지 상태 표시 ── */
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.25);
+            border-radius: 20px;
+            padding: 2px 8px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: blink 1.2s infinite;
+        }
+
+        /* ── 토스트 알림 ── */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(25, 12, 40, 0.96);
+            border: 1px solid rgba(196, 113, 237, 0.5);
+            border-radius: 30px;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 9999;
+            white-space: nowrap;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 400px) {
+            .qr-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .qr-img {
+                width: 100%;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="donate-page">
+
+        <!-- 헤더 -->
+        <div class="donate-header">
+            <a href="index.html" class="back-btn">← 메인으로</a>
+            <div class="char-mini"></div>
+            <h1>하린이에게<br>후원하기 💕</h1>
+            <p class="subtitle">작은 후원이 하린이의 큰 힘이 됩니다 ☕</p>
+            <div id="total-accumulated"
+                style="margin-top: 15px; font-size: 1.1rem; font-weight: 800; color: #fff; background: rgba(0,0,0,0.3); display: inline-block; padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(196,113,237,0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                총 누적 후원: <span style="color: #43e97b;" id="total-acc-value">불러오는 중...</span>
+            </div>
+        </div>
+
+        <!-- 이번 달 마일스톤 -->
+        <div class="glass-card">
+            <div class="section-title">🎯 이번 달 목표</div>
+            <div class="milestone-top">
+                <span class="milestone-label" id="milestone-goal">이번 달 목표</span>
+                <span class="milestone-amount" id="milestone-amount">$0 / $150 USDT</span>
+            </div>
+            <div class="milestone-track" id="milestone-track" style="margin: 40px 0 35px 0;">
+                <div class="milestone-fill" id="milestone-fill"></div>
+            </div>
+            <div class="milestone-steps" id="milestone-steps">
+                <!-- JS로 렌더 -->
+            </div>
+            <div class="milestone-note">※ USDT 기준 · 환율 약 ₩1,350/USDT 적용</div>
+        </div>
+
+        <!-- 투네이션 후원 섹션 -->
+        <div class="glass-card" style="text-align: center; padding: 40px 20px;">
+            <div class="section-title" style="margin-bottom: 20px;">🎉 하린이에게 후원하기</div>
+            <p style="color: #ddd; margin-bottom: 30px; font-size: 0.95rem; line-height: 1.6;">
+                투네이션으로 결제하시면 복잡한 인증 절차 없이<br>
+                <strong style="color: #ff9a9e;">게임 화면 전체에 닉네임과 함께 화려한 후원 알림</strong>이 전송됩니다!
+            </p>
+            <a href="https://toon.at/donate/harin_love" target="_blank" rel="noopener noreferrer"
+                style="display: inline-block; background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); color: #fff; padding: 18px 40px; font-size: 1.2rem; font-weight: 800; border-radius: 30px; text-decoration: none; box-shadow: 0 10px 25px rgba(0, 210, 255, 0.4); transition: transform 0.2s, box-shadow 0.2s;"
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(0, 210, 255, 0.6)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 10px 25px rgba(0, 210, 255, 0.4)';">
+                💳 하린이 간식 사주기
+            </a>
+            <div class="caution-box" style="margin-top: 30px; text-align: left;">
+                💡 <strong>안내:</strong> 후원금은 전액 하린이의 사리사욕을 채우는 데 사용됩니다. <br>
+                카카오페이, 토스페이, 신용카드 등 다양한 결제 수단을 지원합니다.<br><br>"쿠키도 먹고 싶고! 마라탕도 배 터지게 먹고싶어!!"
+            </div>
+        </div>
+
+        <!-- 월별 후원 현황 -->
+        <div class="glass-card">
+            <div class="section-title">
+                📊 월별 후원 현황
+                <span class="live-badge"><span class="live-dot"></span>자동 감지</span>
+            </div>
+            <div class="chart-bars" id="chart-bars">
+                <div class="chart-empty loading-dots">블록체인 조회 중…</div>
+            </div>
+        </div>
+
+        <!-- Hall of Fame -->
+        <div class="glass-card">
+            <div class="section-title">
+                🏆 후원자 목록
+                <span class="live-badge"><span class="live-dot"></span>실시간</span>
+            </div>
+            <div class="hof-list" id="hof-list">
+                <div class="hof-empty loading-dots">블록체인 조회 중…</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 월드 메시지 (슈퍼챗) 배너 -->
+    <div id="world-message-banner" class="world-banner hidden">
+        <div class="banner-content">
+            <span class="banner-icon">💎</span>
+            <span class="banner-user" id="wm-user">유저명</span>님이
+            <span class="banner-amount" id="wm-amount">$100</span>을 후원하셨습니다!
+            <div class="banner-msg" id="wm-msg"></div>
+        </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div id="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/SoundFX.js"></script>
+    <script src="js/SoundManager.js"></script>
+
+    <script>
+        /* ────────────────────────────────────────
+           상수
+        ──────────────────────────────────────── */
+        const WALLET = 'TGiFzbi95UA8Ea71pKcw5JS4ebFqvsaaXo';
+        // USDT TRC-20 컨트랙트 주소 (Tron 메인넷)
+        const USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+        const USDT_TO_KRW = 1350; // 참고용 고정 환율
+
+        // 마일스톤 (USDT 기준)
+        const MILESTONES = [
+            { usdt: 1.1, icon: 'assets/donate/macaron.webp', name: '뚱카룽', label: '뚱카룽 하나 사먹으며 힘낼게요. 감사합니다! 💕' },
+            { usdt: 3.7, icon: 'assets/donate/donut.webp', name: '두쫀쿠', label: '두쫀쿠로 작은 행복을 느끼고 있어요. 감사합니다 🥺' },
+            { usdt: 17.0, icon: 'assets/donate/malatang.webp', name: '마라탕', label: '마라탕 고기 추가 23000원(배달비 포함) 든든하게 먹겠습니다 🙏' },
+            { usdt: 148.0, icon: 'assets/donate/beef.webp', name: '한우 오마카세', label: '한우 오마카세 FLEX… 항상 응원해주셔서 정말 감사합니다 💖' }
+        ];
+        const MONTHLY_GOAL_USDT = 150;
+
+        /* ────────────────────────────────────────
+           마일스톤 초기 렌더
+        ──────────────────────────────────────── */
+        function renderMilestoneSteps() {
+            const container = document.getElementById('milestone-steps');
+            const track = document.getElementById('milestone-track');
+
+            // 기존 마커 및 틱 지우기 (초기화)
+            if (track) {
+                track.style.position = 'relative';
+                track.querySelectorAll('.milestone-marker, .milestone-tick, .milestone-amttext').forEach(e => e.remove());
+            }
+
+            container.innerHTML = MILESTONES.map((m, i) => {
+                const krw = Math.floor(m.usdt * USDT_TO_KRW).toLocaleString();
+                const pct = Math.min((m.usdt / MONTHLY_GOAL_USDT) * 100, 100);
+
+                // 트랙 위에 동그라미 아이콘 마커 및 눈금선 교차 추가 (겹침 방지)
+                if (track) {
+                    const isEven = i % 2 === 0;
+
+                    // 눈금선 (Tick)
+                    const tick = document.createElement('div');
+                    tick.className = 'milestone-tick';
+                    tick.id = `tick-${i}`;
+
+                    if (isEven) {
+                        tick.style.cssText = `position:absolute; left:${pct}%; top:-12px; height:20px; width:2px; background:rgba(255,255,255,0.4); z-index:5;`;
+                    } else {
+                        tick.style.cssText = `position:absolute; left:${pct}%; top:8px; height:20px; width:2px; background:rgba(255,255,255,0.4); z-index:5;`;
+                    }
+                    track.appendChild(tick);
+
+                    // 동그라미 마커
+                    const marker = document.createElement('div');
+                    marker.className = 'milestone-marker';
+                    marker.id = `marker-${i}`;
+
+                    if (isEven) {
+                        marker.style.cssText = `position:absolute; left:${pct}%; top:-14px; transform:translate(-50%, -50%); width:24px; height:24px; border-radius:50%; background:#222; border:2px solid #555; display:flex; align-items:center; justify-content:center; z-index:10; transition:all 0.3s;`;
+                    } else {
+                        marker.style.cssText = `position:absolute; left:${pct}%; top:30px; transform:translate(-50%, -50%); width:24px; height:24px; border-radius:50%; background:#222; border:2px solid #555; display:flex; align-items:center; justify-content:center; z-index:10; transition:all 0.3s;`;
+                    }
+                    marker.innerHTML = `<img src="${m.icon}" style="width:14px; height:14px; object-fit:contain; filter:grayscale(1) opacity(0.6);" id="marker-img-${i}">`;
+                    track.appendChild(marker);
+                }
+
+                // 마카롱(index 0)은 원본이 작으므로 1.2x 적용
+                const imgSize = (i === 0) ? '52px' : '44px';
+
+                return `
+                <div class="milestone-step" id="step-${i}" style="margin-bottom:12px;">
+                    <div class="step-emoji" id="step-emoji-${i}">
+                        <img src="${m.icon}" id="step-icon-${i}"
+                             style="width:${imgSize}; height:${imgSize}; object-fit:contain;
+                                    filter:grayscale(1) opacity(0.45); transition:filter 0.4s;">
+                    </div>
+                    <div class="step-label" style="flex:1;">
+                        <strong style="font-size:0.95rem; color:#ddd;"><span id="check-${i}" style="color:#888; margin-right:6px;">○</span>${m.name}</strong><br>
+                        <span style="font-size:0.8rem; color:#aaa;">${m.label}</span><br>
+                        <small style="color: #999;">$${m.usdt.toFixed(1)} (약 ₩${krw})</small>
+                    </div>
+                    <div class="step-check" id="step-check-${i}">·</div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        /* ────────────────────────────────────────
+           마일스톤 UI 업데이트 (금액, 게이지 및 원화 변환)
+        ──────────────────────────────────────── */
+        function updateMilestoneGauge(totalUsdt) {
+            const pct = Math.min((totalUsdt / MONTHLY_GOAL_USDT) * 100, 100);
+            const fill = document.getElementById('milestone-fill');
+            if (fill) fill.style.width = pct + '%';
+
+            const totalKrw = Math.floor(totalUsdt * USDT_TO_KRW).toLocaleString();
+            const amtLabel = document.getElementById('milestone-amount');
+            if (amtLabel) amtLabel.innerHTML = `💸 달성 현황: <strong style="color:#fff;">$${totalUsdt.toFixed(2)}</strong> <small>(약 ₩${totalKrw})</small>`;
+
+            const goalKrw = Math.floor(MONTHLY_GOAL_USDT * USDT_TO_KRW).toLocaleString();
+            const now = new Date();
+            const goalLabel = document.getElementById('milestone-goal');
+            if (goalLabel) goalLabel.innerHTML = `${now.getMonth() + 1}월 목표: $${MONTHLY_GOAL_USDT} USDT <small>(약 ₩${goalKrw})</small>`;
+
+            MILESTONES.forEach((m, i) => {
+                const step = document.getElementById(`step-${i}`);
+                const check = document.getElementById(`check-${i}`);
+                const marker = document.getElementById(`marker-${i}`);
+                const markerImg = document.getElementById(`marker-img-${i}`);
+                const tick = document.getElementById(`tick-${i}`);
+                const stepIcon = document.getElementById(`step-icon-${i}`);
+                const stepEmoji = document.getElementById(`step-emoji-${i}`);
+                const stepCheck = document.getElementById(`step-check-${i}`);
+
+                if (totalUsdt >= m.usdt) {
+                    if (step) step.classList.add('achieved');
+                    if (check) { check.textContent = '✔️'; check.style.color = '#43e97b'; }
+                    if (marker) {
+                        marker.style.borderColor = '#43e97b';
+                        marker.style.background = 'rgba(67, 233, 123, 0.2)';
+                        marker.style.boxShadow = '0 0 10px rgba(67, 233, 123, 0.5)';
+                    }
+                    if (markerImg) markerImg.style.filter = 'none';
+                    if (tick) { tick.style.background = '#43e97b'; tick.style.boxShadow = '0 0 5px #43e97b'; }
+                    // 달성: 이미지 풀컬러, 이모지박스 초록 테두리, 체크 표시
+                    if (stepIcon) stepIcon.style.filter = 'none';
+                    if (stepEmoji) stepEmoji.style.background = 'rgba(67, 233, 123, 0.12)';
+                    if (stepCheck) stepCheck.textContent = '✓';
+                } else {
+                    if (step) step.classList.remove('achieved');
+                    if (check) { check.textContent = '○'; check.style.color = '#888'; }
+                    if (marker) {
+                        marker.style.borderColor = '#555';
+                        marker.style.background = '#222';
+                        marker.style.boxShadow = 'none';
+                    }
+                    if (markerImg) markerImg.style.filter = 'grayscale(1) opacity(0.6)';
+                    if (tick) { tick.style.background = 'rgba(255,255,255,0.4)'; tick.style.boxShadow = 'none'; }
+                    // 미달성: 이미지 흑백
+                    if (stepIcon) stepIcon.style.filter = 'grayscale(1) opacity(0.45)';
+                    if (stepEmoji) stepEmoji.style.background = 'rgba(255, 255, 255, 0.06)';
+                    if (stepCheck) stepCheck.textContent = '·';
+                }
+            });
+        }
+
+        /* ────────────────────────────────────────
+           주소 복사
+        ──────────────────────────────────────── */
+        function copyAddress() {
+            const fallbackCopy = () => {
+                const tempInput = document.createElement('input');
+                tempInput.value = WALLET;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('💕 주소가 복사되었습니다! 감사해요~');
+                } catch (err) {
+                    showToast('📋 복사 실패. 직접 텍스트를 선택해 복사해주세요.');
+                }
+                document.body.removeChild(tempInput);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(WALLET)
+                    .then(() => showToast('💕 주소가 복사되었습니다! 감사해요~'))
+                    .catch(() => fallbackCopy());
+            } else {
+                fallbackCopy();
+            }
+        }
+
+        /* ────────────────────────────────────────
+           토스트
+        ──────────────────────────────────────── */
+        let toastTimer;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        /* ────────────────────────────────────────
+           TronGrid API로 입금 내역 자동 감지
+        ──────────────────────────────────────── */
+        async function fetchTronTxs() {
+            const url = `https://api.trongrid.io/v1/accounts/${WALLET}/transactions/trc20` +
+                `?limit=50&contract_address=${USDT_CONTRACT}&order_by=block_timestamp,desc`;
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const json = await res.json();
+                return Array.isArray(json.data) ? json.data : [];
+            } catch (e) {
+                console.error('TronGrid 조회 실패:', e);
+                return [];
+            }
+        }
+
+        /* ────────────────────────────────────────
+           시간 포맷
+        ──────────────────────────────────────── */
+        function formatTime(ts) {
+            const d = new Date(ts);
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mi = String(d.getMinutes()).padStart(2, '0');
+            return `${mm}/${dd} ${hh}:${mi}`;
+        }
+
+        /* ────────────────────────────────────────
+           월별 차트 렌더
+        ──────────────────────────────────────── */
+        function renderChart(monthlyMap) {
+            const container = document.getElementById('chart-bars');
+
+            if (!monthlyMap || Object.keys(monthlyMap).length === 0) {
+                container.innerHTML = '<div class="chart-empty">아직 후원 내역이 없습니다 💕</div>';
+                return;
+            }
+
+            const sorted = Object.entries(monthlyMap)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .slice(-6);
+
+            const maxVal = Math.max(...sorted.map(([, v]) => v), 0.01);
+            container.innerHTML = '';
+
+            sorted.forEach(([key, val]) => {
+                const pct = (val / maxVal) * 100;
+                const monthNum = key.slice(5); // "2026-03" → "03"
+                const item = document.createElement('div');
+                item.className = 'bar-item';
+                item.innerHTML = `
+                    <div class="bar-fill" style="height:${pct}%"></div>
+                    <div class="bar-label">${monthNum}월<br>$${val.toFixed(1)}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        /* ────────────────────────────────────────
+           Hall of Fame 렌더
+        ──────────────────────────────────────── */
+        function renderHof(items, authMap = {}) {
+            const list = document.getElementById('hof-list');
+
+            if (!items || items.length === 0) {
+                list.innerHTML = `
+                    <div class="hof-empty">
+                        아직 후원 내역이 없어요.<br>
+                        첫 번째 후원자가 되어주세요! 💕
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            items.forEach(item => {
+                const timeStr = formatTime(item.ts);
+                const nick = authMap[item.txid] || item.nick;
+                const msgHtml = item.msg ? `<div style="font-size: 0.78rem; color: #9a9a9a; margin-top:2px;">"${escHtml(item.msg)}"</div>` : '';
+
+                const div = document.createElement('div');
+                div.className = 'hof-item';
+                div.innerHTML = `
+                    <span class="hof-coin">💛</span>
+                    <div class="hof-body">
+                        <div class="hof-nick">${escHtml(nick)}</div>
+                        ${msgHtml}
+                        <div class="hof-time">${timeStr}</div>
+                    </div>
+                    <div class="hof-amount">${escHtml(item.amount)}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function escHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        /* ────────────────────────────────────────
+           localStorage 기상 모의 후원 헬퍼
+        ──────────────────────────────────────── */
+        const LS_KEY = 'donate_mock_data';
+
+        const MODAL_HTML = `
+            <div id="custom-prompt-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:#1a0030; border:1px solid rgba(196,113,237,0.3); padding:20px; border-radius:15px; width:90%; max-width:350px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                    <h3 id="cp-title" style="margin-top:0; color:#fff; font-size:1.1rem;">입력</h3>
+                    <p id="cp-desc" style="color:#aaa; font-size:0.85rem; margin-bottom:15px;"></p>
+                    <input type="text" id="cp-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid #555; background:rgba(255,255,255,0.1); color:#fff; margin-bottom:15px; box-sizing:border-box;">
+                    <input type="text" id="cp-input2" style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid #555; background:rgba(255,255,255,0.1); color:#fff; margin-bottom:15px; box-sizing:border-box;">
+                    <input type="text" id="cp-input3" style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid #555; background:rgba(255,255,255,0.1); color:#fff; margin-bottom:15px; box-sizing:border-box;">
+                    <div style="display:flex; gap:10px;">
+                        <button id="cp-cancel" style="flex:1; padding:10px; background:rgba(255,255,255,0.1); border:none; color:#fff; border-radius:8px; cursor:pointer;">취소</button>
+                        <button id="cp-submit" style="flex:1; padding:10px; background:linear-gradient(90deg, #ff9a9e, #c471ed); border:none; color:#fff; border-radius:8px; cursor:pointer; font-weight:bold;">확인</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', MODAL_HTML);
+
+        function showCustomPrompt(title, desc, placeholder1, placeholder2, placeholder3, callback) {
+            const modal = document.getElementById('custom-prompt-modal');
+            document.getElementById('cp-title').innerText = title;
+            document.getElementById('cp-desc').innerText = desc;
+
+            const i1 = document.getElementById('cp-input');
+            const i2 = document.getElementById('cp-input2');
+            const i3 = document.getElementById('cp-input3');
+
+            i1.value = ''; i1.placeholder = placeholder1; i1.style.display = 'block';
+            if (placeholder2) { i2.value = ''; i2.placeholder = placeholder2; i2.style.display = 'block'; } else { i2.style.display = 'none'; }
+            if (placeholder3) { i3.value = ''; i3.placeholder = placeholder3; i3.style.display = 'block'; } else { i3.style.display = 'none'; }
+
+            modal.style.display = 'flex';
+
+            const btnSubmit = document.getElementById('cp-submit');
+            const btnCancel = document.getElementById('cp-cancel');
+
+            const cleanup = () => {
+                modal.style.display = 'none';
+                btnSubmit.onclick = null;
+                btnCancel.onclick = null;
+            };
+
+            btnSubmit.onclick = () => {
+                const v1 = i1.value.trim();
+                const v2 = i2.value.trim();
+                const v3 = i3.value.trim();
+                cleanup();
+                callback(v1, v2, v3);
+            };
+            btnCancel.onclick = () => cleanup();
+        }
+
+        function getMockData() {
+            try {
+                return JSON.parse(localStorage.getItem(LS_KEY) || '{"shoutouts":[], "monthly":{}, "authMap":{}}');
+            } catch (e) { return { shoutouts: [], monthly: {}, authMap: {} }; }
+        }
+
+        function saveMockData(data) {
+            localStorage.setItem(LS_KEY, JSON.stringify(data));
+        }
+
+        /* ────────────────────────────────────────
+           모의 후원 테스트 함수
+        ──────────────────────────────────────── */
+        function mockDonation() {
+            showCustomPrompt('🧪 모의 후원', '테스트할 금액 다중 입력 (최대 3개 항목)', '금액 (USDT) 예: 20', '닉네임 예: 하린팬', '메시지 (슈퍼챗)', (amountRaw, nickname, msg) => {
+                if (!amountRaw) return;
+                const amountUsdt = parseFloat(amountRaw);
+                if (isNaN(amountUsdt) || amountUsdt <= 0) {
+                    showToast("올바른 금액을 입력해주세요.");
+                    return;
+                }
+                if (!nickname) nickname = '익명테스터';
+
+                const now = new Date();
+                const ts = now.getTime();
+                const thisYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                const mockTxid = 'mock_' + ts;
+
+                const data = getMockData();
+                if (!data.authMap) data.authMap = {};
+                data.shoutouts.unshift({ txid: mockTxid, nick: nickname, msg: msg || '', amount: `$${amountUsdt} USDT (테스트)`, ts, isMock: true });
+                data.monthly[thisYM] = (data.monthly[thisYM] || 0) + amountUsdt;
+                saveMockData(data);
+
+                broadcastSuperChat(nickname, `$${amountUsdt} USDT`, msg);
+
+                showToast(`모의 후원 $${amountUsdt} 접수 완료!`);
+                setTimeout(loadDonationData, 1000);
+            });
+        }
+
+        /* ────────────────────────────────────────
+           TxID 지갑 인증 로직
+        ──────────────────────────────────────── */
+        async function verifyTxid() {
+            showCustomPrompt('💸 TxID 인증', '업비트 등에서 송금 후 발급받은 거래 ID (TxID)를 입력하세요', 'TxID 입력', '사용하실 닉네임', null, async (txid, nickname) => {
+                if (!txid) return;
+                if (!nickname) return showToast("닉네임을 입력해주세요!");
+
+                try {
+                    showToast("TxID 검증 중입니다...");
+                    const url = `https://api.trongrid.io/v1/transactions/${txid}/events`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+
+                    if (json.success && json.data && json.data.length > 0) {
+                        const event = json.data[0];
+                        if (event.result && event.result.to !== WALLET) {
+                            showToast("입력하신 거래 ID의 수신자가 하린이 지갑이 아닙니다!");
+                            return;
+                        }
+
+                        const data = getMockData();
+                        if (!data.authMap) data.authMap = {};
+                        data.authMap[txid] = nickname;
+                        saveMockData(data);
+
+                        if (typeof firebase !== 'undefined' && firebase.database) {
+                            const db = firebase.database();
+                            db.ref(`donations/auth/${txid}`).set(nickname);
+                        }
+
+                        const val = event.result.value ? (parseInt(event.result.value) / 1000000).toFixed(2) : '알 수 없음';
+                        broadcastSuperChat(nickname, `$${val} USDT`, "TxID 인증 완료!");
+
+                        showToast("🎉 인증 성공! 랭킹보드에 닉네임과 VIP 뱃지가 표시됩니다.");
+                        loadDonationData();
+                    } else {
+                        showToast("존재하지 않거나 아직 컨펌되지 않은 거래 ID입니다. (5~10분 후 다시 시도해보세요)");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast("인증 조회 중 오류가 발생했습니다.");
+                }
+            });
+        }
+
+        function broadcastSuperChat(nickname, amountStr, msg) {
+            // localStorage에 기록 (index.html 폴링 fallback용)
+            try {
+                const evData = { nickname, amountStr, msg: msg || '', timestamp: Date.now() };
+                localStorage.setItem('superchat_event', JSON.stringify(evData));
+            } catch (e) { }
+
+            // Firebase가 켜져 있으면 events/superchat에 쏘기
+            if (typeof firebase !== 'undefined' && firebase.database) {
+                try {
+                    const db = firebase.database();
+                    db.ref('events/superchat').set({
+                        nickname: nickname,
+                        amountStr: amountStr,
+                        msg: msg || '',
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } catch (e) { }
+            }
+        }
+
+        function clearMockData() {
+            if (!confirm('모의 후원 데이터를 모두 삭제하시겠어요?')) return;
+            localStorage.removeItem(LS_KEY);
+            showToast('테스트 데이터가 삭제되었습니다.');
+            loadDonationData();
+        }
+
+        /* ────────────────────────────────────────
+           메인 로직: 블록체인 + localStorage 병합
+        ──────────────────────────────────────── */
+        async function loadDonationData() {
+            // 1. localStorage 모의 데이터 (바로 가져오기, 빠름)
+            const mockData = getMockData();
+            const mockShoutouts = mockData.shoutouts || [];
+            const mockMonthly = mockData.monthly || {};
+            let localAuthMap = mockData.authMap || {};
+
+            // Firebase의 연동된 authMap 병합
+            if (typeof firebase !== 'undefined' && firebase.database) {
+                try {
+                    const snap = await firebase.database().ref('donations/auth').once('value');
+                    if (snap.exists()) {
+                        localAuthMap = { ...localAuthMap, ...snap.val() };
+                    }
+                } catch (e) { }
+            }
+
+            // 2. TronGrid 블록체인 실데이터 (비동기)
+            const txs = await fetchTronTxs();
+            const chainIncoming = txs
+                .filter(tx =>
+                    tx.to &&
+                    tx.to.toLowerCase() === WALLET.toLowerCase() &&
+                    tx.token_info && tx.token_info.symbol === 'USDT'
+                )
+                .map(tx => ({
+                    txid: tx.transaction_id,
+                    nick: `${tx.from.slice(0, 6)}…${tx.from.slice(-4)}`,
+                    msg: '',
+                    amount: `$${(parseInt(tx.value) / 1_000_000).toFixed(2)} USDT`,
+                    ts: tx.block_timestamp
+                }));
+
+            // 3. Hall of Fame 통합 정렬(최신순)
+            const allHof = [...mockShoutouts, ...chainIncoming]
+                .sort((a, b) => b.ts - a.ts)
+                .slice(0, 20);
+
+            // 4. 합산 로직 (월별, 그리고 총합)
+            const monthlyMap = { ...mockMonthly };
+            let allTimeTotal = 0;
+
+            // 로컬 모의 데이터 총합 추가
+            for (const val of Object.values(mockMonthly)) {
+                allTimeTotal += val;
+            }
+
+            txs.forEach(tx => {
+                if (tx.to &&
+                    tx.to.toLowerCase() === WALLET.toLowerCase() &&
+                    tx.token_info && tx.token_info.symbol === 'USDT'
+                ) {
+                    const d = new Date(tx.block_timestamp);
+                    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    const amt = parseInt(tx.value) / 1_000_000;
+                    monthlyMap[ym] = (monthlyMap[ym] || 0) + amt;
+                    allTimeTotal += amt;
+                }
+            });
+
+            // 5. 이번 달 합산
+            const now = new Date();
+            const thisYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const thisMonthTotal = monthlyMap[thisYM] || 0;
+
+            // 6. 총 누적 UI 업데이트
+            const allTimeKrw = Math.floor(allTimeTotal * USDT_TO_KRW).toLocaleString();
+            const totalAccumulatedEl = document.getElementById('total-accumulated');
+            if (totalAccumulatedEl) {
+                totalAccumulatedEl.innerHTML = `총 누적 후원: <span style="color: #43e97b;">$${allTimeTotal.toFixed(2)} USDT</span> <small style="color: #ccc; font-weight: normal;">(약 ₩${allTimeKrw})</small>`;
+            }
+
+            // 7. UI 업데이트
+            updateMilestoneGauge(thisMonthTotal);
+            renderChart(monthlyMap);
+            renderHof(allHof, localAuthMap);
+        }
+
+        /* ────────────────────────────────────────
+           초기화
+        ──────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMilestoneSteps();
+            updateMilestoneGauge(0);
+            loadDonationData();
+
+            // 30초마다 자동 갱신 (블록체인만, localStorage는 즉시 반영)
+            setInterval(loadDonationData, 30_000);
+        });
+    </script>
+
+    <!-- 슈퍼챗 월드 메시지 리스너 (donate.html용) -->
+    <script>
+        (function initSuperChatListener() {
+            const MAX_AGE_MS = 15_000; // 15초 이내 이벤트만 표시
+            const banner = document.getElementById('world-message-banner');
+            const wmUser = document.getElementById('wm-user');
+            const wmAmt = document.getElementById('wm-amount');
+            const wmMsg = document.getElementById('wm-msg');
+            let bannerTimer = null;
+            let shownTs = 0;
+
+            const PARTICLE_COLORS = [
+                '#f6c90e', '#fa8231', '#e84393', '#9c27b0',
+                '#43e97b', '#38f9d7', '#4facfe', '#fff'
+            ];
+
+            function showWorldMessage(data) {
+                if (!banner || !data) return;
+                const eventTs = data.timestamp || Date.now();
+                const age = Date.now() - eventTs;
+                if (age > MAX_AGE_MS) return; // 오래된 이벤트 무시
+
+                if (eventTs === shownTs) return;
+                shownTs = eventTs;
+
+                // 표시 후 localStorage 삭제 → 뒤로가기 재표시 방지
+                try { localStorage.removeItem('superchat_event'); } catch (e) { }
+
+                wmUser.textContent = data.nickname || '익명';
+                wmAmt.textContent = data.amountStr || '$?';
+                wmMsg.textContent = data.msg ? `"${data.msg}"` : '';
+
+                if (window.soundManager) {
+                    const amtNum = parseFloat(String(data.amountStr).replace(/[^0-9.]/g, ''));
+                    if (amtNum >= 50) {
+                        window.soundManager.playVoice('donate_super');
+                    } else {
+                        window.soundManager.playVoice('donate_normal');
+                    }
+                }
+
+                banner.classList.remove('hidden');
+                banner.classList.add('visible');
+                launchConfetti();
+
+                if (bannerTimer) clearTimeout(bannerTimer);
+                bannerTimer = setTimeout(() => {
+                    banner.classList.remove('visible');
+                    banner.classList.add('hidden');
+                }, 4000);
+            }
+
+            function launchConfetti() {
+                for (let i = 0; i < 40; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'superchat-particle';
+                    const x = (Math.random() - 0.5) * window.innerWidth * 0.9;
+                    const y = (Math.random() * 0.6 + 0.3) * window.innerHeight;
+                    const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+                    const size = Math.random() * 8 + 4;
+                    p.style.cssText = [
+                        `--x: ${x}px`, `--y: ${y}px`,
+                        `background: ${color}`,
+                        `width: ${size}px`, `height: ${size}px`,
+                        `animation-delay: ${Math.random() * 0.4}s`,
+                        `animation-duration: ${1.5 + Math.random()}s`,
+                        `border-radius: ${Math.random() > 0.5 ? '50%' : '2px'}`
+                    ].join(';');
+                    document.body.appendChild(p);
+                    p.addEventListener('animationend', () => p.remove(), { once: true });
+                }
+            }
+
+            // Firebase 구독 (실시간)
+            function listenFirebase() {
+                if (typeof firebase === 'undefined' || !firebase.database) return;
+                try {
+                    firebase.database().ref('events/superchat').on('value', snap => {
+                        if (!snap.exists()) return;
+                        showWorldMessage(snap.val());
+                    });
+                } catch (e) { }
+            }
+
+            // localStorage 폴링 fallback
+            let _prevLsTs = 0;
+            function pollLocalStorage() {
+                try {
+                    const raw = localStorage.getItem('superchat_event');
+                    if (!raw) return;
+                    const ev = JSON.parse(raw);
+                    if (ev.timestamp && ev.timestamp !== _prevLsTs) {
+                        _prevLsTs = ev.timestamp;
+                        showWorldMessage(ev);
+                    }
+                } catch (e) { }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                listenFirebase();
+                setInterval(pollLocalStorage, 500);
+            });
+        })();
+    </script>
+</body>
+
+</html>

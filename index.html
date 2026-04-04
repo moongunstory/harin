@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Harin MBTI Clicker</title>
+    <meta name="description" content="내 클릭이 하린이의 MBTI를 바꾼다! 하린과 함께하는 글로벌 MBTI 대결">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+</head>
+
+<body>
+    <!-- 월드 메시지 알림 컨테이너 (슈퍼챗) -->
+    <div id="world-message-container" class="world-message-container"></div>
+
+    <!-- 막고라 매칭 큐 배너 -->
+    <div id="makgora-queue-banner" style="position:fixed; top:15px; left:5%; right:5%; max-width:380px; margin:0 auto; z-index:9999; background:rgba(20,20,25,0.95); backdrop-filter:blur(8px); text-align:center; padding:12px 20px; border:1px solid rgba(255,71,87,0.3); border-bottom:2px solid #ff4757; border-radius:20px; display:flex; justify-content:center; align-items:center; gap:20px; transform:translateY(-150%); opacity:0; pointer-events:none; transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 10px 30px rgba(255,71,87,0.3);">
+        <div style="font-size:1.05rem; font-weight:800; color:#fff; letter-spacing:0.5px;">⚔️ 매칭 중... <span id="makgora-queue-timer" style="color:#ffb199; margin-left:8px;">0초</span></div>
+        <button id="btn-cancel-makgora-queue" style="background:rgba(255,255,255,0.1); color:#ff4757; border:1px solid rgba(255,71,87,0.5); padding:6px 14px; border-radius:15px; cursor:pointer; font-weight:800; transition:all 0.2s;">취소</button>
+    </div>
+
+    <!-- 모바일 채팅방 토글 버튼 -->
+    <button id="chat-toggle-btn" class="chat-toggle-btn">💬 채팅</button>
+
+    <div class="main-layout">
+    <!-- 실시간 채팅 사이드바 -->
+    <aside class="chat-sidebar" id="chat-sidebar">
+        <div class="chat-header">
+            <button class="chat-tab active" data-tab="global">🌍 전체</button>
+            <button class="chat-tab" data-tab="friends">👥 친구</button>
+            <button class="chat-tab" data-tab="match">🤝 1:1 매칭</button>
+            <button class="chat-close" id="chat-close-btn">&times;</button>
+        </div>
+        
+        <div class="chat-body">
+            <!-- 전체 채팅 영역 -->
+            <div id="chat-global-view" class="chat-view active">
+                <div class="message-list" id="global-msg-list"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="global-msg-input" placeholder="메시지 입력 (회원 전용)" maxlength="60">
+                    <button id="global-msg-send" class="btn-send">전송</button>
+                </div>
+            </div>
+            
+            <!-- 1:1 매칭 영역 -->
+            <div id="chat-match-view" class="chat-view">
+                <!-- 대기 및 매칭 제어부 -->
+                <div id="match-status-area" class="match-status-area">
+                    <p id="match-status-text">참여자 중 1명과 랜덤 연결됩니다.</p>
+                    <button id="btn-start-match" class="btn-match">매칭 시작</button>
+                </div>
+                
+                <!-- 매칭 성사 후 채팅부 -->
+                <div id="match-chat-area" class="match-chat-area hidden">
+                    <div class="chat-appbar">
+                        <button id="btn-leave-match" class="appbar-back-btn" title="나가기">←</button>
+                        <button class="appbar-title" id="match-partner-profile-btn">
+                            <span id="match-partner-name">상대방</span>
+                            <span id="match-partner-mbti-badge" class="appbar-mbti-badge"></span>
+                        </button>
+                        <button id="btn-match-more" class="appbar-more-btn">⋮</button>
+                        <div id="match-more-menu" class="appbar-menu hidden">
+                            <button class="appbar-menu-item" id="btn-match-profile">프로필 보기</button>
+                            <button class="appbar-menu-item appbar-menu-danger" id="btn-match-block">차단하기</button>
+                        </div>
+                    </div>
+                    <div class="message-list" id="match-msg-list"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="match-msg-input" placeholder="메시지를 입력하세요" maxlength="60">
+                        <button id="match-msg-send" class="btn-send">전송</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 친구 & DM 탭 -->
+            <div id="chat-friends-view" class="chat-view">
+                <div id="friends-list-area" style="flex:1; overflow-y:auto; padding:10px;">
+                    <div style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">👤 친구 목록 <span style="color:#555; font-size:0.75rem;">· 이름 클릭 → 프로필</span></div>
+                    <div id="friends-list-container" style="display:flex; flex-direction:column; gap:6px;"></div>
+                </div>
+                <div id="friend-dm-area" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+                    <!-- DM AppBar -->
+                    <div class="chat-appbar">
+                        <button id="btn-dm-back" class="appbar-back-btn" title="친구 목록">←</button>
+                        <button class="appbar-title" id="dm-partner-profile-btn">
+                            <span id="dm-partner-name">닉네임</span>
+                            <span id="dm-partner-mbti-badge" class="appbar-mbti-badge"></span>
+                        </button>
+                        <button id="btn-dm-more" class="appbar-more-btn">⋮</button>
+                        <div id="dm-more-menu" class="appbar-menu hidden">
+                            <button class="appbar-menu-item" id="btn-dm-profile">프로필 보기</button>
+                            <button class="appbar-menu-item" id="btn-dm-makgora">⚔️ 막고라 신청</button>
+                            <button class="appbar-menu-item appbar-menu-danger" id="btn-dm-block">차단하기</button>
+                        </div>
+                    </div>
+                    <div class="message-list" id="dm-msg-list" style="flex:1;"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="dm-msg-input" placeholder="귓속말 입력..." maxlength="60">
+                        <button id="dm-msg-send" class="btn-send">전송</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게스트 접속자 접근 차단 오버레이 -->
+        <div id="chat-guest-overlay" class="chat-guest-overlay hidden">
+            <p>닉네임과 MBTI를 설정하고<br>전 세계 유저와 대화해보세요!</p>
+            <button id="btn-open-nickname-chat" class="btn-auth">참여하기 🚀</button>
+        </div>
+    </aside>
+
+        <div class="app-container" style="position:relative;">
+        <button id="btn-toggle-sound" class="header-btn" style="position:absolute; top:15px; right:15px; z-index:100; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.3); font-weight:800; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:all 0.2s;" title="소리 켜기/끄기">🔊</button>
+        <header style="display:block; width:100%; text-align:center;">
+            <div class="header-title" style="width:100%; text-align:center;">
+                <h1 style="text-align:center;">MBTI WAR</h1>
+                <p class="subtitle" style="text-align:center;">내 클릭이 하린이의 MBTI를 바꾼다!</p>
+            </div>
+        </header>
+
+        <!-- 버프 상태 알림 (메인 상단) -->
+        <div id="buff-indicator" class="buff-indicator" style="display: none;">
+            ✨ 공유 버프 활성화 중! x2 (<span id="buff-timer">05:00</span> 남음)
+        </div>
+
+        <!-- 캐릭터 / 배경 일러스트 노출 영역 -->
+        <main class="character-viewport">
+            <!-- 투명 PNG 에셋이 추가되면 이곳에 겹쳐서 표시됨 -->
+            <div id="layer-background" class="layer" style="opacity: 1;"></div>
+            <div id="layer-character" class="layer" style="opacity: 1;"></div>
+
+
+            <div id="placeholder-text" class="placeholder-text" style="display: none;">
+                <p>일러스트 노출 영역</p>
+                <small>(에셋 대기 중)</small>
+            </div>
+
+            <!-- 월드 메시지 (슈퍼챗) 배너 -->
+            <div id="world-message-banner" class="world-banner hidden">
+                <div class="banner-content">
+                    <span class="banner-icon">💎</span>
+                    <span class="banner-user" id="wm-user">유저명</span>님이 
+                    <span class="banner-amount" id="wm-amount">$100</span>을 후원하셨습니다!
+                    <div class="banner-msg" id="wm-msg">"메시지 내용"</div>
+                </div>
+            </div>
+
+            <!-- 특정 진영 압도 시 나타날 배너 -->
+            <div id="status-banner" class="hidden">
+                <span id="banner-text">🔥 외향(E) 진영이 압도 중입니다!</span>
+            </div>
+
+            <!-- 현재 MBTI 텍스트 표시 -->
+            <div id="current-mbti-label" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); font-size:2.8rem; font-weight:900; color:#fff; text-shadow:0 4px 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.4); z-index:50; letter-spacing:6px; opacity:0.95; pointer-events:none;"></div>
+        </main>
+        <!-- 콤보 UI (화면 중앙 상단 오버레이) -->
+        <div id="combo-meter" class="combo-meter fade-out">
+            <span class="combo-count">0</span> <span class="combo-text">COMBO!</span>
+            <div class="combo-bar-wrapper">
+                <div class="combo-bar"></div>
+            </div>
+        </div>
+
+        <!-- 메인 인터랙션 영역 (게이지 & 버튼) -->
+        <section class="mbti-dashboard">
+            <!-- E vs I -->
+            <div class="mbti-row" data-axis="ei">
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-left" data-type="E">
+                        <span class="icon">🔥</span> <span class="label">E 외향</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-E">0</span>
+                </div>
+                <div class="mbti-stats">
+                    <span class="score left-score">0</span>
+                    <div class="gauge-wrapper">
+                        <div class="gauge-fill left-fill" style="width: 50%;"></div>
+                        <div class="gauge-marker"></div>
+                    </div>
+                    <span class="score right-score">0</span>
+                </div>
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-right" data-type="I">
+                        <span class="label">I 내향</span> <span class="icon">💤</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-I">0</span>
+                </div>
+            </div>
+
+            <!-- S vs N -->
+            <div class="mbti-row" data-axis="sn">
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-left" data-type="S">
+                        <span class="icon">📚</span> <span class="label">S 감각</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-S">0</span>
+                </div>
+                <div class="mbti-stats">
+                    <span class="score left-score">0</span>
+                    <div class="gauge-wrapper">
+                        <div class="gauge-fill left-fill" style="width: 50%;"></div>
+                        <div class="gauge-marker"></div>
+                    </div>
+                    <span class="score right-score">0</span>
+                </div>
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-right" data-type="N">
+                        <span class="label">N 직관</span> <span class="icon">🌌</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-N">0</span>
+                </div>
+            </div>
+
+            <!-- T vs F -->
+            <div class="mbti-row" data-axis="tf">
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-left" data-type="T">
+                        <span class="icon">🤖</span> <span class="label">T 사고</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-T">0</span>
+                </div>
+                <div class="mbti-stats">
+                    <span class="score left-score">0</span>
+                    <div class="gauge-wrapper">
+                        <div class="gauge-fill left-fill" style="width: 50%;"></div>
+                        <div class="gauge-marker"></div>
+                    </div>
+                    <span class="score right-score">0</span>
+                </div>
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-right" data-type="F">
+                        <span class="label">F 감정</span> <span class="icon">💖</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-F">0</span>
+                </div>
+            </div>
+
+            <!-- J vs P -->
+            <div class="mbti-row" data-axis="jp">
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-left" data-type="J">
+                        <span class="icon">📋</span> <span class="label">J 판단</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-J">0</span>
+                </div>
+                <div class="mbti-stats">
+                    <span class="score left-score">0</span>
+                    <div class="gauge-wrapper">
+                        <div class="gauge-fill left-fill" style="width: 50%;"></div>
+                        <div class="gauge-marker"></div>
+                    </div>
+                    <span class="score right-score">0</span>
+                </div>
+                <div class="btn-wrap">
+                    <button class="mbti-btn btn-right" data-type="P">
+                        <span class="label">P 인식</span> <span class="icon">🎲</span>
+                    </button>
+                    <span class="btn-clicks" id="badge-P">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 프로필 및 부가 기능 연동 영역 -->
+        <div class="user-actions-container" style="display:flex; gap:6px; padding:15px; background:rgba(0,0,0,0.3); border-radius:20px; border:1px solid rgba(255,255,255,0.1); margin:10px 0; justify-content:center; flex-wrap:wrap;">
+            <button id="btn-random-makgora" class="header-btn" style="background:linear-gradient(135deg, #ff0844, #ffb199); color:#121212; border:none; font-weight:800; border-radius:15px; padding:10px 6px; cursor:pointer; box-shadow:0 4px 15px rgba(255, 8, 68, 0.4); white-space:nowrap; transition:all 0.2s; flex:1; min-width:0;">⚔️ 1vs1 매칭</button>
+            <button id="btn-achievements" class="header-btn" style="background:linear-gradient(135deg, #f6c90e, #ff9a9e); color:#121212; border:none; font-weight:800; border-radius:15px; padding:10px 6px; cursor:pointer; box-shadow:0 4px 15px rgba(246, 201, 14, 0.5); white-space:nowrap; transition:all 0.2s; flex:1; min-width:0;">🏆 업적</button>
+            <button id="btn-my-profile" class="header-btn btn-profile-header" style="background:linear-gradient(135deg, #a18cd1, #fbc2eb); color:#121212; border:none; font-weight:800; border-radius:15px; padding:10px 6px; cursor:pointer; box-shadow:0 4px 15px rgba(161, 140, 209, 0.5); white-space:nowrap; transition:all 0.2s; flex:1; min-width:0;">👤 내 프로필</button>
+        </div>
+
+        <!-- 푸터 / 네비게이션 -->
+        <footer>
+            <button id="btn-share" class="share-btn" style="margin-bottom: 24px; display: block; width: 100%; white-space: nowrap; font-size: 0.95rem;">
+                🚀 친구 초대하고 5분간 [클릭 3배] 받기!
+            </button>
+            <a href="donate.html" class="donate-link" style="margin-bottom: 12px;">
+                <span class="icon">☕</span> 하린이에게 커피 사주기
+            </a>
+            <a href="https://www.instagram.com/harin.zero/" target="_blank" rel="noopener noreferrer" class="insta-link"
+                style="margin-bottom: 24px;" onclick="if(window.AchievementAPI) window.AchievementAPI.deferUnlock('harin_insta')">
+                <span class="icon">📸</span> 하린이 인스타 보러 가기
+            </a>
+        </footer>
+
+        <!-- 랭킹 보드 (화면 하단 중앙 고정, 토글형) -->
+        <section id="rank-section" class="ranking-board-bottom collapsed">
+            <!-- 삐죽 튀어나온 헤더 부분 (클릭하여 열기/닫기) -->
+            <div class="rank-header" id="rank-toggle-btn">
+                <div class="drag-handle"></div>
+                <div class="rank-summary">
+                    <div><span class="rank-label">글로벌 클릭: </span><span id="total-clicks" class="rank-value">0</span></div>
+                    <div>
+                        <span class="rank-label">내 기여도: </span>
+                        <span id="my-total-clicks" class="rank-value">0</span>
+                        <span id="guest-hint" class="guest-hint" style="display:none;">닉네임 등록 시 기록 →</span>
+                    </div>
+                </div>
+                <div class="toggle-icon">▲</div>
+            </div>
+
+            <!-- 펼쳐졌을 때 보이는 내용 -->
+            <div class="rank-body">
+                <!-- 메인 3탭 -->
+                <div class="ranking-main-tabs">
+                    <button class="rank-main-tab active" data-main="global">🌍 글로벌 클릭</button>
+                    <button class="rank-main-tab" data-main="mbti">🧬 MBTI 배틀</button>
+                    <button class="rank-main-tab" data-main="makgora">⚔️ 막고라</button>
+                </div>
+
+                <!-- 글로벌 클릭 패널 -->
+                <div class="rank-main-panel active" id="rank-main-global">
+                    <div class="ranking-content">
+                        <div class="rank-panel active" id="rank-ALL">
+                            <ul id="list-ALL" class="detailed-rank-list">
+                                <li>로딩 중...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MBTI 배틀 패널 -->
+                <div class="rank-main-panel" id="rank-main-mbti">
+                    <div class="mbti-sub-tabs">
+                        <button class="rank-tab active" data-target="E">E</button>
+                        <button class="rank-tab" data-target="I">I</button>
+                        <button class="rank-tab" data-target="S">S</button>
+                        <button class="rank-tab" data-target="N">N</button>
+                        <button class="rank-tab" data-target="T">T</button>
+                        <button class="rank-tab" data-target="F">F</button>
+                        <button class="rank-tab" data-target="J">J</button>
+                        <button class="rank-tab" data-target="P">P</button>
+                    </div>
+                    <div class="ranking-content">
+                        <div class="rank-panel active" id="rank-E"><ul id="list-E" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-I"><ul id="list-I" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-S"><ul id="list-S" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-N"><ul id="list-N" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-T"><ul id="list-T" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-F"><ul id="list-F" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-J"><ul id="list-J" class="detailed-rank-list"></ul></div>
+                        <div class="rank-panel" id="rank-P"><ul id="list-P" class="detailed-rank-list"></ul></div>
+                    </div>
+                </div>
+
+                <!-- 막고라 랭킹 패널 -->
+                <div class="rank-main-panel" id="rank-main-makgora">
+                    <div class="ranking-content">
+                        <ul id="list-MAKGORA" class="detailed-rank-list">
+                            <li style="color:#888; text-align:center; padding: 10px;">막고라 데이터를 불러오는 중...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        </div>
+    </div>
+
+    <!-- 닉네임 설정 모달 -->
+    <div id="nickname-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>진영 참가하기</h2>
+            <p>랭킹 보드에 이름을 남기려면 닉네임과 MBTI를 설정하세요.</p>
+            <input type="text" id="nickname-input" placeholder="닉네임 (최대 8자)" maxlength="8">
+            <select id="mbti-select" class="modal-select">
+                <option value="" disabled selected>내 MBTI 선택</option>
+                <option value="ESTP">ESTP</option>
+                <option value="ESFP">ESFP</option>
+                <option value="ENFP">ENFP</option>
+                <option value="ENTP">ENTP</option>
+                <option value="ESTJ">ESTJ</option>
+                <option value="ESFJ">ESFJ</option>
+                <option value="ENFJ">ENFJ</option>
+                <option value="ENTJ">ENTJ</option>
+                <option value="ISTP">ISTP</option>
+                <option value="ISFP">ISFP</option>
+                <option value="INFP">INFP</option>
+                <option value="INTP">INTP</option>
+                <option value="ISTJ">ISTJ</option>
+                <option value="ISFJ">ISFJ</option>
+                <option value="INFJ">INFJ</option>
+                <option value="INTJ">INTJ</option>
+            </select>
+            <div id="nickname-error" style="color:#ff6b6b; font-size:0.85rem; height:1rem; margin-bottom:10px; font-weight:bold;"></div>
+            <button id="nickname-submit" class="modal-btn">참가하기</button>
+            <button id="nickname-skip" class="modal-btn ghost">건너뛰기 (게스트)</button>
+        </div>
+    </div>
+
+    <!-- 내 프로필 모달 -->
+    <div id="my-profile-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 420px; padding: 2rem 1.5rem; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
+            <h2>👤 내 프로필 및 설정</h2>
+            <div id="my-profile-info" style="margin-bottom: 1.5rem; color: #fff; line-height: 1.6;">
+                <div>닉네임: <span id="my-profile-nick" style="font-weight:bold; color:#ff9a9e;"></span></div>
+                <div>MBTI: <span id="my-profile-mbti" style="font-weight:bold; color:#fbc2eb;"></span></div>
+                <div>장착 칭호: <span id="my-profile-title" style="color:#f6c90e;">없음</span></div>
+                <div id="my-makgora-record-display" style="margin-top:0.75rem; color:#ddd; font-size:0.95rem;"></div>
+            </div>
+
+            <!-- 내역 보기 버튼 -->
+            <button id="btn-show-makgora-history" class="modal-btn" style="margin-bottom: 1rem; background: linear-gradient(135deg, #f6c90e, #ff9a9e); border-radius:10px; font-size:0.95rem; padding:12px; width:100%; color:#000;">전적 보기</button>
+
+            <div style="font-size: 0.85rem; color: #aaa; text-align: left; margin-bottom: 5px;">[닉네임 / MBTI 변경]</div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:1rem;">
+                <input type="text" id="my-profile-name-input" placeholder="새 닉네임" maxlength="8" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px; border-radius:10px; font-size:1rem; outline:none;">
+                <select id="my-profile-mbti-select" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px; border-radius:10px; font-size:1rem; outline:none; cursor:pointer; appearance:auto;">
+                    <option value="ESTP" style="color:#000;">ESTP</option><option value="ESFP" style="color:#000;">ESFP</option><option value="ENFP" style="color:#000;">ENFP</option><option value="ENTP" style="color:#000;">ENTP</option>
+                    <option value="ESTJ" style="color:#000;">ESTJ</option><option value="ESFJ" style="color:#000;">ESFJ</option><option value="ENFJ" style="color:#000;">ENFJ</option><option value="ENTJ" style="color:#000;">ENTJ</option>
+                    <option value="ISTP" style="color:#000;">ISTP</option><option value="ISFP" style="color:#000;">ISFP</option><option value="INFP" style="color:#000;">INFP</option><option value="INTP" style="color:#000;">INTP</option>
+                    <option value="ISTJ" style="color:#000;">ISTJ</option><option value="ISFJ" style="color:#000;">ISFJ</option><option value="INFJ" style="color:#000;">INFJ</option><option value="INTJ" style="color:#000;">INTJ</option>
+                </select>
+                <input type="text" id="my-profile-bio-input" placeholder="✏️ 한 줄 소개말 (최대 40자)" maxlength="40" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px; border-radius:10px; font-size:0.9rem; outline:none; font-style:italic;">
+            </div>
+            <button id="btn-save-my-profile" class="modal-btn">정보 수정하기</button>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button id="btn-show-friends" class="modal-btn" style="flex:1; font-size: 0.85rem; background: rgba(255,255,255,0.1); color: #fff;">내 친구 목록</button>
+                <button id="btn-show-blocked" class="modal-btn ghost" style="flex:1; font-size: 0.85rem;">차단된 유저</button>
+            </div>
+            <button class="modal-btn ghost close-modal-btn" data-target="my-profile-modal" style="margin-top:10px;">닫기</button>
+        </div>
+    </div>
+
+    <!-- 친구 관리 모달 -->
+    <div id="friends-manage-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px; padding: 1.5rem; max-height: 80vh; display: flex; flex-direction: column;">
+            <h2 style="margin-bottom:15px;">👥 내 친구 목록</h2>
+            <div id="friends-manage-list" style="flex:1; overflow-y:auto; margin-bottom:15px;">
+                <!-- 렌더링 -->
+            </div>
+            <button class="modal-btn ghost close-modal-btn" data-target="friends-manage-modal">닫기</button>
+        </div>
+    </div>
+
+    <!-- 막고라 전적 모달 -->
+    <div id="makgora-history-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px; padding: 1.5rem; max-height: 80vh; display: flex; flex-direction: column; gap: 1rem;">
+            <h2 style="margin-bottom:0;">⚔️ Match History</h2>
+            <div id="my-makgora-history-list" style="flex:1; overflow-y:auto; padding-right:5px; display:flex; flex-direction:column;">
+                <!-- 렌더링 -->
+            </div>
+            <button class="modal-btn ghost close-modal-btn" data-target="makgora-history-modal">Close</button>
+        </div>
+    </div>
+
+    <!-- 차단 관리 모달 -->
+    <div id="blocked-manage-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px; padding: 1.5rem; max-height: 80vh; display: flex; flex-direction: column;">
+            <h2 style="margin-bottom:15px; color:#ff6b6b;">🚫 차단 유저 관리</h2>
+            <div id="blocked-manage-list" style="flex:1; overflow-y:auto; margin-bottom:15px;">
+                <!-- 렌더링 -->
+            </div>
+            <button class="modal-btn ghost close-modal-btn" data-target="blocked-manage-modal">닫기</button>
+        </div>
+    </div>
+
+    <!-- 타 유저 프로필 모달 -->
+    <div id="user-profile-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 350px; max-height: 80vh; overflow-y: auto;">
+            <div id="up-title" style="font-size: 0.8rem; color:#f6c90e; font-weight:800; margin-bottom:4px;"></div>
+            <h2 id="up-nickname" style="margin-bottom: 3px;">로딩중...</h2>
+            <div id="up-mbti" style="font-size: 1rem; color: #fbc2eb; margin-bottom: 6px; font-weight:bold;"></div>
+            <div id="up-bio" style="font-size:0.82rem; color:#aaa; font-style:italic; margin-bottom:14px; min-height:16px;"></div>
+            
+            <div class="profile-stats" id="up-stats" style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom: 15px; text-align:left; font-size:0.8rem; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;">
+                <!-- 렌더링 -->
+            </div>
+
+            <div class="profile-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                <button id="btn-up-whisper" class="modal-btn" style="background: linear-gradient(90deg, #43e97b, #38f9d7); color:#121212;">💬 귓속말하기</button>
+                <button id="btn-up-friend" class="modal-btn" style="background: rgba(255,255,255,0.15); color: #fff;">➕ 친구 추가</button>
+                <button id="btn-up-makgora" class="modal-btn" style="background: linear-gradient(90deg, #ff0844, #ffb199); color:#fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">⚔️ 막고라 신청</button>
+                <button id="btn-up-block" class="modal-btn ghost" style="color: #ff6b6b; border-color: #ff6b6b;">🚫 차단하기</button>
+            </div>
+            
+            <button class="modal-btn ghost close-modal-btn" data-target="user-profile-modal" style="margin-top:10px;">닫기</button>
+        </div>
+    </div>
+
+    <!-- 업적 토스트 (동적으로 JS에서 컨트롤) -->
+    <div id="achievement-toast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(20,20,30,0.97); border:1px solid #f6c90e; padding:15px 25px; border-radius:30px; box-shadow:0 10px 30px rgba(246,201,14,0.4); flex-direction:row; align-items:center; gap:15px; z-index:9999; color:#fff; pointer-events:none; white-space:nowrap;">
+        <div style="font-size:2rem; animation:mg-pulse 1s infinite alternate;">🏆</div>
+        <div>
+            <div id="achievement-toast-title"></div>
+            <div id="achievement-toast-desc" style="font-size:0.8rem; color:#ccc; margin-top:2px;"></div>
+        </div>
+    </div>
+
+    <!-- 업적 전체 목록 모달 -->
+    <div id="achievement-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:480px; max-height:85vh; display:flex; flex-direction:column;">
+            <h2>🏆 업적 목록</h2>
+            <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px;">달성한 업적을 클릭하면 대표 칭호로 장착됩니다! 장착 칭호는 닉네임 옆에 표시됩니다.</p>
+            <div id="achievement-list-full" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:5px;"></div>
+            <button class="modal-btn ghost close-modal-btn" data-target="achievement-modal" style="margin-top:15px;">닫기</button>
+        </div>
+    </div>
+
+    <!-- SNS 공유 모달 -->
+    <div id="sns-share-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:340px; text-align:center;">
+            <div style="font-size:2.5rem; margin-bottom:10px;">🚀</div>
+            <h2 style="margin-bottom:8px;">친구 초대하기</h2>
+            <p style="color:#fbc2eb; font-size:0.9rem; margin-bottom:20px;">공유하고 5분간 <strong>[클릭 2배]</strong> 버프 획득!</p>
+            
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                <button class="modal-btn" data-sns="kakao" style="background:#FEE500; color:#191919; border:none;">💬 카카오톡</button>
+                <button class="modal-btn" data-sns="twitter" style="background:#1DA1F2; color:#fff; border:none;">🐦 트위터(X)</button>
+                <button class="modal-btn" data-sns="facebook" style="background:#1877F2; color:#fff; border:none;">📘 페이스북</button>
+                <button class="modal-btn" data-sns="blog" style="background:#2DB400; color:#fff; border:none;">📗 네이버 블로그</button>
+                <button class="modal-btn" data-sns="instagram" style="background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color:#fff; border:none;" onclick="if(window.AchievementAPI) window.AchievementAPI.deferUnlock('harin_insta')">📸 인스타그램 (링크 복사)</button>
+                <button class="modal-btn" data-sns="link" style="background:#555; color:#fff; border:none;">🔗 링크 복사하기</button>
+            </div>
+            
+            <button class="modal-btn ghost close-modal-btn" data-target="sns-share-modal">닫기</button>
+        </div>
+    </div>
+
+    <!-- ⚔️ 막고라: 초대 수락 팝업 -->
+    <div id="makgora-invite-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:340px; text-align:center;">
+            <div style="font-size:3rem; margin-bottom:10px;">⚔️</div>
+            <h2 style="margin-bottom:8px;">막고라 신청!</h2>
+            <p id="makgora-invite-text" style="color:#fbc2eb; font-size:1rem; margin-bottom:20px;">상대방이 막고라를 신청했습니다!</p>
+            <div style="display:flex; gap:10px;">
+                <button id="btn-makgora-accept" class="modal-btn" style="flex:1; background:linear-gradient(90deg,#ff0844,#ffb199);">⚔️ 수락</button>
+                <button id="btn-makgora-decline" class="modal-btn ghost" style="flex:1;">거절</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚔️ 막고라: 턴제 심리전 오버레이 -->
+    <div id="makgora-overlay" style="display:none; position:fixed; inset:0; background:rgba(5,5,15,0.97); backdrop-filter:blur(10px); z-index:10000; flex-direction:row; color:#fff; box-sizing:border-box; opacity:0; transition:opacity 0.5s ease-in-out;">
+        
+        <!-- [신규] 중앙 메인 게임 영역 Wrapper -->
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; position:relative;">
+            
+            <!-- [신규] 게임 시작 스크린 (VS) -->
+            <div id="makgora-start-screen" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); z-index:200; flex-direction:column; justify-content:center; align-items:center;">
+                <div style="font-size:3rem; margin-bottom:10px;">⚔️</div>
+                <div style="display:flex; align-items:center; gap:20px; font-size:1.5rem; font-weight:900;">
+                    <div id="mg-start-my-name" style="color:#43e97b;">나</div>
+                    <div style="font-size:2.5rem; color:#f6c90e; font-style:italic;">VS</div>
+                    <div id="mg-start-rival-name" style="color:#ff6b6b;">상대</div>
+                </div>
+                <div style="margin-top:20px; font-size:1rem; color:#aaa; animation: pulse 1s infinite alternate;">전투 준비 중...</div>
+            </div>
+
+            <!-- [신규] 중앙 격돌 상태 이펙트 텍스트 -->
+            <div id="makgora-clash-text" style="display:none; position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); font-size:2rem; font-weight:900; z-index:100; text-align:center; text-shadow:0 5px 20px rgba(0,0,0,0.8); pointer-events:none; white-space:nowrap;"></div>
+
+            <!-- 헤더 -->
+            <div style="width:100%; max-width:420px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="width:50px;"></div> <!-- Spacer -->
+                <div style="font-size:1.1rem; font-weight:800; letter-spacing:3px; color:#ff6b6b; text-transform:uppercase;">⚔️ 막고라 ⚔️</div>
+                <button id="btn-makgora-surrender" style="width:50px; font-size:0.75rem; padding:4px; color:#ff6b6b; background:transparent; border:1px solid rgba(255,107,107,0.5); border-radius:5px; cursor:pointer;" onmouseenter="this.style.background='rgba(255,107,107,0.1)'" onmouseleave="this.style.background='transparent'">기권</button>
+            </div>
+            <div id="makgora-sudden-label" style="display:none;font-size:0.78rem;color:#ff6b6b;letter-spacing:1px;font-weight:700;margin-bottom:4px;animation:mg-pulse 0.6s infinite alternate;">🔥 서든데스 — 데미지 2배!</div>
+
+        <!-- 분리된 HP 게이지 (신규) -->
+        <div id="makgora-hp-container" style="width:100%; max-width:420px; margin-bottom:14px; position:relative; display:flex; flex-direction:column; gap:8px;">
+            <!-- [신규] 플로팅 데미지 발생 기준점 -->
+            <div id="mg-dmg-left" style="position:absolute; left:15%; top:0px; pointer-events:none; z-index:150;"></div>
+            <div id="mg-dmg-right" style="position:absolute; right:15%; top:0px; pointer-events:none; z-index:150;"></div>
+            
+            <div style="text-align:center; font-size:0.75rem; color:#888;">
+                턴: <strong id="makgora-turn-label" style="color:#fff;">1</strong> / <span id="makgora-max-turns">10</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; gap:10px; width:100%;">
+                <!-- 상대방 HP 상자 -->
+                <div style="flex:1; min-width:0; background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:10px; padding:6px 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span id="makgora-rival-name" style="color:#ff6b6b; font-weight:700; font-size:0.8rem; cursor:pointer; text-decoration:underline; text-decoration-color:rgba(255,107,107,0.4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" onclick="if(window.MakgoraAPI && window.ProfileAPI){ const r=window.MakgoraAPI.getRivalInfo(); if(r) window.ProfileAPI.openUserProfile(r.id, r.name); }">상대</span>
+                        <span style="font-size:0.75rem; font-weight:bold; white-space:nowrap;">HP <span id="makgora-rival-hp" style="color:#ff6b6b; font-size:1rem;">10</span></span>
+                    </div>
+                    <div style="width:100%; height:10px; background:rgba(0,0,0,0.5); border-radius:5px; overflow:hidden;">
+                        <div id="makgora-rival-hp-bar" style="height:100%; width:100%; background:linear-gradient(90deg,#ff0844,#ffb199); transition:width 0.3s cubic-bezier(0.2,0.8,0.2,1); border-radius:5px;"></div>
+                    </div>
+                </div>
+
+                <!-- 내 HP 상자 -->
+                <div style="flex:1; min-width:0; background:rgba(67,233,123,0.1); border:1px solid rgba(67,233,123,0.3); border-radius:10px; padding:6px 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span id="makgora-my-name" style="color:#43e97b; font-weight:700; font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">나</span>
+                        <span style="font-size:0.75rem; font-weight:bold; white-space:nowrap;">HP <span id="makgora-my-hp" style="color:#43e97b; font-size:1rem;">10</span></span>
+                    </div>
+                    <div style="width:100%; height:10px; background:rgba(0,0,0,0.5); border-radius:5px; overflow:hidden;">
+                        <div id="makgora-my-hp-bar" style="height:100%; width:100%; background:linear-gradient(90deg,#43e97b,#38f9d7); transition:width 0.3s cubic-bezier(0.2,0.8,0.2,1); border-radius:5px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상태 정보 -->
+        <div id="makgora-status-box" style="width:100%;max-width:420px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px 14px;margin-bottom:12px;font-size:0.82rem;min-height:44px;text-align:center;color:#bbb;">
+            행동을 선택해 주세요!
+        </div>
+
+        <!-- 마지막 턴 결과 로그 -->
+        <div id="makgora-log" style="width:100%;max-width:420px;background:rgba(0,0,0,0.3);border-radius:10px;padding:6px 12px;margin-bottom:12px;font-size:0.78rem;color:#999;min-height:36px;text-align:center;border:1px solid rgba(255,255,255,0.06);
+        ">이전 턴 결과가 여기에 표시됩니다.</div>
+
+        <!-- 팀 정보 -->
+        <div style="width:100%;max-width:420px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:0.72rem;color:#888;">
+                버프: <span id="makgora-buff-label" style="color:#f6c90e;">없음</span>
+            </div>
+            <div id="makgora-timer" style="font-size:1.1rem;font-weight:800;color:#f6c90e;">-</div>
+        </div>
+
+        <!-- 행동 버튼 그룹 -->
+        <div id="makgora-action-area" style="width:100%;max-width:420px;">
+            <div id="makgora-action-btns" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+                <button class="mg-btn" id="mg-btn-charge" data-action="charge" style="background:linear-gradient(135deg,#ff4757,#ff6b81); padding:12px 4px; display:flex; flex-direction:column; align-items:center;">
+                    <span class="mg-btn-icon" style="font-size:1.6rem; margin-bottom:4px;">🟥</span>
+                    <span class="mg-btn-name" style="font-size:0.9rem; margin-bottom:4px;">돌진(E)</span>
+                    <span class="mg-btn-desc" style="font-size:0.65rem; color:rgba(255,255,255,0.8); line-height:1.2;">피해량 2</span>
+                </button>
+                <button class="mg-btn" id="mg-btn-parry" data-action="parry" style="background:linear-gradient(135deg,#3498db,#74b9ff); padding:12px 4px; display:flex; flex-direction:column; align-items:center;">
+                    <span class="mg-btn-icon" style="font-size:1.6rem; margin-bottom:4px;">🟦</span>
+                    <span class="mg-btn-name" style="font-size:0.9rem; margin-bottom:4px;">간파(N)</span>
+                    <span class="mg-btn-desc" style="font-size:0.65rem; color:rgba(255,255,255,0.8); line-height:1.2;">피격 시 1.5배 반사</span>
+                </button>
+                <button class="mg-btn" id="mg-btn-store" data-action="store" style="background:linear-gradient(135deg,#f39c12,#fdcb6e); padding:12px 4px; display:flex; flex-direction:column; align-items:center;">
+                    <span class="mg-btn-icon" style="font-size:1.6rem; margin-bottom:4px;">🟨</span>
+                    <span class="mg-btn-name" style="font-size:0.9rem; margin-bottom:4px;">축적(I)</span>
+                    <span class="mg-btn-desc" style="font-size:0.65rem; color:rgba(255,255,255,0.8); line-height:1.2;">다음 공격/반사 2배</span>
+                </button>
+            </div>
+        </div>
+
+        </div> <!-- // 중앙 메인 게임 영역 Wrapper 닫기 -->
+
+        <!-- [신규] 우측 막고라 룰북 영역 -->
+        <!-- 데스크톱 환경에서는 항상 표시되며 넓은 화면을 채움 -->
+        <div id="makgora-rules-panel" style="width:300px; min-width:260px; max-width:320px; border-left:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); padding:30px 20px; overflow-y:auto; display:flex; flex-direction:column;">
+            <div style="font-size:1.2rem; font-weight:800; color:#f6c90e; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                <span>⚖️</span> <span>막고라 룰북</span>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:0.85rem; color:#ddd; line-height:1.4;">
+                <p>1대1 턴제 가위바위보 심리전입니다. HP 10으로 시작하여 먼저 생명력을 모두 잃는 쪽이 패배합니다.</p>
+                
+                <div style="background:rgba(255,71,87,0.15); border-left:3px solid #ff4757; padding:10px; border-radius:4px;">
+                    <strong style="color:#ff6b81;">🟥 돌진(E)</strong><br>
+                    강력한 기본 공격입니다. (확정 피해량 2)
+                </div>
+
+                <div style="background:rgba(52,152,219,0.15); border-left:3px solid #3498db; padding:10px; border-radius:4px;">
+                    <strong style="color:#74b9ff;">🟦 간파(N)</strong><br>
+                    상대가 <strong style="color:#ff6b81;">돌진</strong>할 때 사용하면 데미지를 무효화하고 받은 피해의 1.5배를 반사합니다.
+                </div>
+
+                <div style="background:rgba(243,156,18,0.15); border-left:3px solid #f39c12; padding:10px; border-radius:4px;">
+                    <strong style="color:#fdcb6e;">🟨 축적(I)</strong><br>
+                    내면의 기를 단련합니다. 모은 기운은 <strong>다음 턴에 사용하는 능력(돌진/간파)의 파괴용 피해를 2배 폭증</strong>시킵니다. <br>
+                    <span style="font-size:0.75rem; color:#aaa;">*주의: 모으는 도중 돌진에 맞으면 기가 소산됩니다.</span>
+                </div>
+
+                <p style="margin-top:10px; font-size:0.8rem; color:#bbb;">
+                    <strong style="color:#fff;">⚠️ 3연속 행동 금지</strong><br>
+                    규칙상 <strong>3번 연속 같은 카드를 낼 수 없습니다.</strong> 심리전을 유리하게 이끌어보세요.
+                </p>
+
+                <p style="margin-top:5px; font-size:0.8rem; color:#bbb;">
+                    <strong style="color:#fff;">⏰ 후반 가속 룰</strong><br>
+                    템포가 늘어지는 것을 막기 위해 <strong>5턴 부터 모든 기본 공격력이 +1 증가</strong>합니다.
+                </p>
+                
+                <p style="font-size:0.8rem; color:#ff6b6b;">
+                    <strong style="color:#ff4757;">🔥 서든데스</strong><br>
+                    10턴이 넘어가면 모든 데미지가 2배가 되는 연장전 블러드배스(Bloodbath)에 강제 돌입합니다!
+                </p>
+            </div>
+        </div>
+
+        <!-- 결과 오버레이 (absolute라 위치 제약 없음) -->
+        <div id="makgora-result" style="display:none; position:absolute; inset:0; background:rgba(5,5,15,0.95); flex-direction:column; align-items:center; justify-content:center; z-index:500;">
+            <div id="makgora-result-icon" style="font-size:5rem; margin-bottom:15px;">🏆</div>
+            <div id="makgora-result-title" style="font-size:2.2rem; font-weight:900; margin-bottom:10px;">승리!</div>
+            <div id="makgora-result-desc" style="font-size:1rem; color:#aaa; margin-bottom:30px;">대결 결과</div>
+            <button id="btn-makgora-finish" class="modal-btn" style="background:linear-gradient(90deg,#a18cd1,#fbc2eb); max-width:180px; width:70%; border-radius:25px;">확인</button>
+        </div>
+
+    </div>
+    <!-- /makgora-overlay -->
+
+    <!-- 스크립트 모듈 -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/SoundFX.js"></script>
+    <script src="js/SoundManager.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/clicker.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/achievements.js"></script>
+    <script src="js/makgora.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- 슈퍼챗 월드 메시지 리스너 -->
+    <script>
+    /* ─────────────────────────────────────
+       월드 메시지 (슈퍼챗) - Firebase 리스너
+       donate.html에서 broadcastSuperChat()이
+       events/superchat 경로에 데이터 쓸 때 여기서 수신
+    ───────────────────────────────────── */
+    (function initSuperChatListener() {
+        const MAX_AGE_MS = 15_000; // 15초 이내 이벤트만 표시
+        const banner  = document.getElementById('world-message-banner');
+        const wmUser  = document.getElementById('wm-user');
+        const wmAmt   = document.getElementById('wm-amount');
+        const wmMsg   = document.getElementById('wm-msg');
+
+        let bannerTimer = null;
+        let lastTs = 0;  // 중복 표시 방지
+
+        const PARTICLE_COLORS = [
+            '#f6c90e','#fa8231','#e84393','#9c27b0',
+            '#43e97b','#38f9d7','#4facfe','#fff'
+        ];
+
+        function showWorldMessage(data) {
+            if (!banner || !data) return;
+            // 서버 아직 적용 전이라 timestamp가 없으면 현재 시간(Date.now()) 적용
+            const eventTs = data.timestamp || Date.now();
+            const age = Date.now() - eventTs;
+            if (age > MAX_AGE_MS) return; // 오래된 이벤트 무시
+
+            // 동일 타임스탬프 중복 무시
+            if (eventTs === lastTs) return;
+            lastTs = eventTs;
+
+            // 표시 후 localStorage 삭제 → 뒤로가기 재표시 방지
+            try { localStorage.removeItem('superchat_event'); } catch(e) {}
+
+            wmUser.textContent  = data.nickname  || '익명';
+            wmAmt.textContent   = data.amountStr || '$?';
+            wmMsg.textContent   = data.msg ? `"${data.msg}"` : '';
+
+            if (window.soundManager) {
+                // $ 기호와 포맷 제거 후 숫자로 변환
+                const amtNum = parseFloat(String(data.amountStr).replace(/[^0-9.]/g, ''));
+                if (amtNum >= 50) {
+                    window.soundManager.playVoice('donate_super');
+                } else {
+                    window.soundManager.playVoice('donate_normal');
+                }
+            }
+
+            // 배너 표시
+            banner.classList.remove('hidden');
+            banner.classList.add('visible');
+
+            // 폭죽 파티클 발사
+            launchConfetti();
+
+            // 자동 숨기기 (4초)
+            if (bannerTimer) clearTimeout(bannerTimer);
+            bannerTimer = setTimeout(() => {
+                banner.classList.remove('visible');
+                banner.classList.add('hidden');
+            }, 4000);
+        }
+
+        function launchConfetti() {
+            const count = 40;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'superchat-particle';
+                const x = (Math.random() - 0.5) * window.innerWidth * 0.9;
+                const y = (Math.random() * 0.6 + 0.3) * window.innerHeight;
+                const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+                const size  = Math.random() * 8 + 4;
+                p.style.cssText = [
+                    `--x: ${x}px`,
+                    `--y: ${y}px`,
+                    `background: ${color}`,
+                    `width: ${size}px`,
+                    `height: ${size}px`,
+                    `animation-delay: ${Math.random() * 0.4}s`,
+                    `animation-duration: ${1.5 + Math.random()}s`,
+                    `border-radius: ${Math.random() > 0.5 ? '50%' : '2px'}`
+                ].join(';');
+                document.body.appendChild(p);
+                p.addEventListener('animationend', () => p.remove(), { once: true });
+            }
+        }
+
+        // Firebase 연동 (실시간 구독)
+        function listenFirebase() {
+            if (typeof firebase === 'undefined' || !firebase.database) return;
+            try {
+                firebase.database().ref('events/superchat').on('value', snap => {
+                    if (!snap.exists()) return;
+                    showWorldMessage(snap.val());
+                });
+            } catch(e) {
+                console.warn('[SuperChat] Firebase 리스너 연결 실패:', e);
+            }
+        }
+
+        // localStorage 폴링 (Firebase 미연동 시 donate.html과 동일 도메인이면 감지 가능)
+        let _prevLsTs = 0;
+        function pollLocalStorage() {
+            try {
+                const raw = localStorage.getItem('superchat_event');
+                if (!raw) return;
+                const ev = JSON.parse(raw);
+                if (ev.timestamp && ev.timestamp !== _prevLsTs) {
+                    _prevLsTs = ev.timestamp;
+                    showWorldMessage(ev);
+                }
+            } catch(e) {}
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            listenFirebase();
+            // 0.5초마다 localStorage 폴링 (Firebase 없을 때 fallback)
+            setInterval(pollLocalStorage, 500);
+        });
+    })();
+    </script>
+
+    <!-- 투네이션 알림창 위젯 -->
+    <!-- character-viewport 밖에 fixed로 배치: iframe의 비투명 배경이 WebP를 덮는 문제 방지 -->
+    <!-- mix-blend-mode:screen: 흰색/회색 배경은 사라지고 알림 애니메이션만 표시됨 -->
+    <!-- pointer-events:none: 모든 클릭/터치를 페이지에 그대로 전달 -->
+</body>
+
+</html>

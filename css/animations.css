@@ -1,0 +1,77 @@
+/* 버튼 통통 튀는 애니메이션 */
+@keyframes popClick {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.85); }
+    100% { transform: scale(1); }
+}
+
+.pop-anim {
+    animation: popClick 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 클릭 파티클 효과 (이모지 둥둥 떠오름) */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.5rem;
+    z-index: 100;
+    animation: floatUp 1s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-80px) scale(1.5);
+    }
+}
+
+/* 막고라: 화면 흔들림 효과 (피격 시) */
+.shake {
+    animation: shakeAnim 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shakeAnim {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+/* 막고라: 플로팅 데미지 텍스트 */
+.floating-damage {
+    position: absolute;
+    color: #ff4757;
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    pointer-events: none;
+    z-index: 200;
+    animation: damageFloat 1.2s ease-out forwards;
+}
+
+@keyframes damageFloat {
+    0% { transform: translateY(0) scale(1.5); opacity: 1; }
+    50% { transform: translateY(-30px) scale(1); opacity: 1; }
+    100% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+}
+
+/* 막고라: 격돌 텍스트 팝업 */
+.clash-pop {
+    animation: clashPopAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes clashPopAnim {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    80% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* 펄스 (VS 화면 대기 시) */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
