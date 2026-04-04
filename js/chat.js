@@ -110,9 +110,10 @@ window.ChatUI = {
 
     checkAuthStatus: function() {
         // 로컬스토리지 정보 불러오기
-        this.userId = localStorage.getItem('mbti_userid');
-        this.nickname = localStorage.getItem('mbti_nickname');
-        this.mbtiType = localStorage.getItem('mbti_type');
+        const profile = window.SecurityUtils.getStoredProfile();
+        this.userId = profile.userId;
+        this.nickname = profile.nickname;
+        this.mbtiType = profile.mbtiType;
 
         const btnAch = document.getElementById('btn-achievements');
 
@@ -154,7 +155,10 @@ window.ChatUI = {
     renderFriendsList: function() {
         const container = document.getElementById('friends-list-container');
         if(!container) return;
-        const friends = JSON.parse(localStorage.getItem('mbti_friends') || '[]');
+        const friends = window.SecurityUtils.getSafeArrayStorage('mbti_friends', (friend) => {
+            const safeFriend = window.SecurityUtils.sanitizeFriend(friend);
+            return safeFriend.id && safeFriend.nickname ? safeFriend : null;
+        });
         if(friends.length === 0) {
             container.innerHTML = `<div style="color:#aaa; font-size:0.8rem;">아직 친구가 없습니다.<br>랭킹이나 채팅에서 유저 닉네임을 클릭해 친구 추가를 해보세요!</div>`;
             return;
@@ -170,11 +174,13 @@ window.ChatUI = {
             const avatarColors = { E:'#ff9a9e', I:'#a0c4ff', S:'#f6c90e', N:'#c77dff', T:'#38f9d7', F:'#ffb3de', J:'#90be6d', P:'#ffd166', '?':'#aaa' };
             const avatarColor = avatarColors[mbtiInitial] || '#aaa';
 
+            const safeNickname = window.SecurityUtils.escapeHtml(friend.nickname);
+            const safeMbti = window.SecurityUtils.escapeHtml(friend.mbti || '');
             item.innerHTML = `
                 <div style="width:32px; height:32px; border-radius:50%; background:${avatarColor}22; border:2px solid ${avatarColor}66; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; color:${avatarColor}; flex-shrink:0;">${friend.mbti ? friend.mbti.slice(0,2) : '?'}</div>
                 <div style="flex:1; min-width:0;">
-                    <div class="friend-name-btn" style="font-size:0.88rem; color:#fff; font-weight:600; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${friend.nickname}</div>
-                    <div style="font-size:0.72rem; color:#888;">${friend.mbti || ''}</div>
+                    <div class="friend-name-btn" style="font-size:0.88rem; color:#fff; font-weight:600; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${safeNickname}</div>
+                    <div style="font-size:0.72rem; color:#888;">${safeMbti}</div>
                 </div>
                 <button class="btn-friend-dm" style="background:rgba(67,233,123,0.15); border:1px solid rgba(67,233,123,0.35); color:#43e97b; border-radius:8px; padding:5px 9px; cursor:pointer; font-size:0.75rem; white-space:nowrap; flex-shrink:0;">DM</button>
                 <button class="btn-friend-mkgr" style="background:rgba(255,8,68,0.15); border:1px solid rgba(255,8,68,0.35); color:#ff6b6b; border-radius:8px; padding:5px 9px; cursor:pointer; font-size:0.75rem; white-space:nowrap; flex-shrink:0;">⚔️</button>
@@ -216,7 +222,8 @@ window.ChatUI = {
     sendDM: function() {
         const input = document.getElementById('dm-msg-input');
         if(!input || !input.value.trim() || !this.currentDMPartnerId) return;
-        const text = input.value.trim();
+        const text = window.SecurityUtils.sanitizeChatMessage(input.value);
+        if(!text) return;
         input.value = '';
 
         // DM 메시지 Direct 전송 (PrivateRooms 재활용)
@@ -250,7 +257,7 @@ window.ChatUI = {
     },
 
     sendGlobalMsg: function() {
-        const text = this.globalInput.value.trim();
+        const text = window.SecurityUtils.sanitizeChatMessage(this.globalInput.value);
         if(!text) return;
         
         if (window.FirebaseAPI && window.FirebaseAPI.sendGlobalChatMessage) {
@@ -355,7 +362,7 @@ window.ChatUI = {
     },
 
     sendPrivateMsg: function() {
-        const text = this.matchInput.value.trim();
+        const text = window.SecurityUtils.sanitizeChatMessage(this.matchInput.value);
         if(!text || this.matchStatus !== 'matched' || !this.currentRoomId) return;
         
         window.FirebaseAPI.sendPrivateMessage(this.currentRoomId, this.userId, this.nickname, text);
@@ -388,8 +395,10 @@ window.ChatUI = {
         const date = data.timestamp ? new Date(data.timestamp) : new Date();
         const timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
 
-        const infoHtml = isMine ? '' : `<div class="msg-info"><strong class="chat-nick" style="cursor:pointer; text-decoration:underline; text-decoration-color:rgba(255,255,255,0.2);">${data.nickname}</strong> <span style="font-size:0.7rem;opacity:0.6;">${data.mbtiType}</span></div>`;
-        const textStr = this.escapeHtml(data.text);
+        const safeNickname = window.SecurityUtils.escapeHtml(window.SecurityUtils.sanitizeNickname(data.nickname) || '익명');
+        const safeMbti = window.SecurityUtils.escapeHtml(window.SecurityUtils.sanitizeMbti(data.mbtiType) || '');
+        const infoHtml = isMine ? '' : `<div class="msg-info"><strong class="chat-nick" style="cursor:pointer; text-decoration:underline; text-decoration-color:rgba(255,255,255,0.2);">${safeNickname}</strong> <span style="font-size:0.7rem;opacity:0.6;">${safeMbti}</span></div>`;
+        const textStr = window.SecurityUtils.escapeHtml(window.SecurityUtils.sanitizeChatMessage(data.text));
         
         row.innerHTML = `
             ${infoHtml}
@@ -431,14 +440,5 @@ window.ChatUI = {
         setTimeout(() => {
             dom.scrollTop = dom.scrollHeight;
         }, 10);
-    },
-
-    escapeHtml: function(unsafe) {
-        return unsafe
-             .replace(/&/g, "&amp;")
-             .replace(/</g, "&lt;")
-             .replace(/>/g, "&gt;")
-             .replace(/"/g, "&quot;")
-             .replace(/'/g, "&#039;");
     }
 };

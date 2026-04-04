@@ -4,13 +4,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const security = window.SecurityUtils;
+
     // 채팅 UI 초기 세팅
     if (window.ChatUI) window.ChatUI.init();
 
     // 0. 유저 닉네임 체크 및 모달 처리
-    let userId = localStorage.getItem('mbti_userid');
-    let nickname = localStorage.getItem('mbti_nickname');
-    let mbtiType = localStorage.getItem('mbti_type');
+    let { userId, nickname, mbtiType, isGuest } = security.getStoredProfile();
 
     if (!userId || (!mbtiType && nickname !== 'Guest')) {
         document.getElementById('nickname-modal').classList.remove('hidden');
@@ -35,12 +35,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        nickname = input;
-        mbtiType = selectedMbti;
-        userId = 'usr_' + Date.now() + Math.random().toString(36).substr(2, 5);
-        localStorage.setItem('mbti_userid', userId);
-        localStorage.setItem('mbti_nickname', nickname);
-        localStorage.setItem('mbti_type', mbtiType);
+        nickname = security.sanitizeNickname(input);
+        mbtiType = security.sanitizeMbti(selectedMbti);
+        if (!nickname) {
+            if(errEl) errEl.innerText = "닉네임은 2자 이상, 안전한 문자만 사용할 수 있어요.";
+            return;
+        }
+
+        userId = security.generateUserId('usr');
+        ({ userId, nickname, mbtiType } = security.persistProfile({
+            userId,
+            nickname,
+            mbtiType,
+            isGuest: false
+        }));
         document.getElementById('nickname-modal').classList.add('hidden');
 
         // 참가 직후 유저 등록 및 랭킹 즉시 갱신
@@ -52,11 +60,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('nickname-skip').addEventListener('click', () => {
-        userId = 'guest_' + Date.now();
-        nickname = 'Guest';
-        localStorage.setItem('mbti_userid', userId);
-        localStorage.setItem('mbti_nickname', nickname);
-        localStorage.setItem('mbti_type', '');
+        ({ userId, nickname, mbtiType, isGuest } = security.persistProfile({
+            userId: security.generateUserId('guest'),
+            nickname: 'Guest',
+            mbtiType: '',
+            isGuest: true
+        }));
         document.getElementById('nickname-modal').classList.add('hidden');
         if (window.ChatUI) window.ChatUI.updateAuth();
     });
@@ -183,9 +192,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
                 const wr = u.wins + u.losses + u.draws > 0
                     ? Math.round(u.wins / (u.wins + u.losses + u.draws) * 100) : 0;
+                const nicknameLabel = security.escapeHtml(security.sanitizeNickname(u.nickname) || '익명');
+                const mbtiLabel = security.escapeHtml(security.sanitizeMbti(u.mbti) || '');
                 return `<li>
                     <span class="rank-badge rank-${i+1}">${medal}</span>
-                    <span class="rank-nick">${u.nickname || '익명'} <small style="color:#888;">${u.mbti || ''}</small></span>
+                    <span class="rank-nick">${nicknameLabel} <small style="color:#888;">${mbtiLabel}</small></span>
                     <span class="rank-score">🏆${u.wins}승 <small>${wr}%</small></span>
                 </li>`;
             }).join('');

@@ -62,6 +62,10 @@ window.FirebaseAPI = {
 
     // 클릭 시 트랜잭션 (글로벌 총합 + 배수 지원)
     incrementCount: async (axis, type, userId, nickname, mbtiType, adds = 1) => {
+        userId = window.SecurityUtils.sanitizeUserId(userId);
+        nickname = window.SecurityUtils.sanitizeNickname(nickname);
+        mbtiType = window.SecurityUtils.sanitizeMbti(mbtiType);
+        adds = Number.isFinite(adds) ? Math.max(1, Math.min(50, Math.floor(adds))) : 1;
         if (!db) {
             // Mock 처리 (로컬 테스트용)
             if (userId) {
@@ -153,6 +157,9 @@ window.FirebaseAPI = {
 
     // 유저 등록 (닉네임 참가 시 즉시 호출) - 랭킹에 바로 반영
     registerUser: async (userId, nickname, mbtiType) => {
+        userId = window.SecurityUtils.sanitizeUserId(userId);
+        nickname = window.SecurityUtils.sanitizeNickname(nickname);
+        mbtiType = window.SecurityUtils.sanitizeMbti(mbtiType);
         if (!userId || !nickname || nickname === 'Guest') return;
 
         if (!db) {
@@ -226,7 +233,12 @@ window.FirebaseAPI = {
 
     // 채팅: 글로벌 채팅 전송
     sendGlobalChatMessage: (userId, nickname, mbtiType, text) => {
+        userId = window.SecurityUtils.sanitizeUserId(userId);
+        nickname = window.SecurityUtils.sanitizeNickname(nickname);
+        mbtiType = window.SecurityUtils.sanitizeMbti(mbtiType);
+        text = window.SecurityUtils.sanitizeChatMessage(text);
         if (!userId || nickname === 'Guest') return;
+        if (!nickname || !text) return;
         
         if (!db) {
             // Mock 모드 동작
@@ -265,6 +277,9 @@ window.FirebaseAPI = {
 
     // 1:1 매칭: 대기열 진입
     joinMatchQueue: async (userId, nickname, mbtiType) => {
+        userId = window.SecurityUtils.sanitizeUserId(userId);
+        nickname = window.SecurityUtils.sanitizeNickname(nickname);
+        mbtiType = window.SecurityUtils.sanitizeMbti(mbtiType);
         if (!userId || nickname === 'Guest') return null;
         
         if (!db) {
@@ -350,6 +365,10 @@ window.FirebaseAPI = {
 
     // 1:1 채팅 전송
     sendPrivateMessage: (roomId, userId, nickname, text) => {
+        userId = window.SecurityUtils.sanitizeUserId(userId);
+        nickname = window.SecurityUtils.sanitizeNickname(nickname);
+        text = window.SecurityUtils.sanitizeChatMessage(text);
+        if (!roomId || !userId || !nickname || !text) return;
         if (!db) {
             if(mockData.listeners['msg_' + roomId]) {
                 mockData.listeners['msg_' + roomId].forEach(cb => cb('msg_'+Date.now(), {
