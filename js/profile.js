@@ -699,19 +699,6 @@ window.ProfileAPI = {
             });
         };
 
-        const dummyHistory = [
-            { rivalId: 'user_101', rivalName: '앨리스', isBot: false, result: 'win', winnerHP: 150, forfeit: false, timestamp: Date.now() - 600000 },
-            { rivalId: 'user_102', rivalName: '브라이언', isBot: false, result: 'loss', winnerHP: 35, forfeit: false, timestamp: Date.now() - 1200000 },
-            { rivalId: 'bot_1', rivalName: '연습봇', isBot: true, result: 'win', winnerHP: 92, forfeit: false, timestamp: Date.now() - 1800000 },
-            { rivalId: 'user_103', rivalName: '채은', isBot: false, result: 'win', winnerHP: 138, forfeit: true, timestamp: Date.now() - 2400000 },
-            { rivalId: 'user_104', rivalName: '민준', isBot: false, result: 'loss', winnerHP: 42, forfeit: false, timestamp: Date.now() - 3000000 },
-            { rivalId: 'bot_2', rivalName: '테스트봇', isBot: true, result: 'loss', winnerHP: 10, forfeit: false, timestamp: Date.now() - 3600000 },
-            { rivalId: 'user_105', rivalName: '소연', isBot: false, result: 'win', winnerHP: 160, forfeit: false, timestamp: Date.now() - 4200000 },
-            { rivalId: 'user_106', rivalName: '재훈', isBot: false, result: 'win', winnerHP: 145, forfeit: false, timestamp: Date.now() - 4800000 },
-            { rivalId: 'user_107', rivalName: '지수', isBot: false, result: 'loss', winnerHP: 22, forfeit: false, timestamp: Date.now() - 5400000 },
-            { rivalId: 'user_108', rivalName: '윤호', isBot: false, result: 'win', winnerHP: 170, forfeit: false, timestamp: Date.now() - 6000000 }
-        ];
-
         if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
             const db = window.firebase.database();
             db.ref(`makgoraHistory/${userId}`).orderByChild('timestamp').limitToLast(10).once('value').then(snap => {
@@ -723,13 +710,13 @@ window.ProfileAPI = {
                     history.sort((a, b) => b.timestamp - a.timestamp);
                     showHistoryRows(history);
                 } else {
-                    showHistoryRows(dummyHistory);
+                    listEl.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">아직 막고라 전적이 없습니다.</div>';
                 }
             }).catch(() => {
                 listEl.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">전적을 불러올 수 없습니다.</div>';
             });
         } else {
-            showHistoryRows(dummyHistory);
+            listEl.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">아직 막고라 전적이 없습니다.</div>';
         }
     }
 };
