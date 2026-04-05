@@ -5,13 +5,14 @@
 
 // TODO: 본인의 Firebase 프로젝트의 Config 객체로 반드시 교체하세요.
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyBaqtbr6e01UMvQpKGQa8Ajo1Hif43Tj6A",
+    authDomain: "mbti-harin.firebaseapp.com",
+    databaseURL: "https://mbti-harin-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mbti-harin",
+    storageBucket: "mbti-harin.firebasestorage.app",
+    messagingSenderId: "188985042497",
+    appId: "1:188985042497:web:64a7e7fc921ede2ca208c0",
+    measurementId: "G-1MTFYKQBES"
 };
 
 // Initialize Firebase (Compat SDK)
@@ -28,6 +29,13 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length && !isPlaceholder) 
 }
 
 const db = (typeof firebase !== 'undefined' && firebase.apps.length && !isPlaceholder) ? firebase.database() : null;
+
+// Firebase 익명 로그인 (보안 규칙 우회용)
+if (typeof firebase !== 'undefined' && firebase.apps.length && !isPlaceholder && firebase.auth) {
+    firebase.auth().signInAnonymously().catch((error) => {
+        console.error("Firebase 익명 로그인 실패 (막고라/전적 기록 불가):", error);
+    });
+}
 
 const defaultStats = {
     ei: { E: 0, I: 0 },
@@ -47,11 +55,16 @@ window.FirebaseAPI = {
     getInitialData: async () => {
         if (!db) return defaultStats;
         try {
-            const snapshot = await db.ref('GlobalStats').once('value');
+            // DB 무한 대기 방지 (3초 타임아웃)
+            const snapshot = await Promise.race([
+                db.ref('GlobalStats').once('value'),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("DB Timeout")), 3000))
+            ]);
+
             if (snapshot.exists()) {
                 return snapshot.val();
             } else {
-                await db.ref('GlobalStats').set(defaultStats);
+                // 초기값이 없을 경우 강제 세팅 시도를 생략 (트랜잭션으로 자동 생성됨)
                 return defaultStats;
             }
         } catch (error) {

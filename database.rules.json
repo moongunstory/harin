@@ -6,14 +6,15 @@
       ".read": true,
       "$axis": {
         "$type": {
-          ".write": "auth != null && newData.isNumber() && newData.val() >= data.val() && newData.val() <= data.val() + 50"
+          ".write": "auth != null && newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
         }
       }
     },
     "Users": {
+      ".read": true,
       "$uid": {
         ".read": true,
-        ".write": "auth != null && auth.uid === $uid",
+        ".write": "auth != null",
         "nickname": {
           ".validate": "newData.isString() && newData.val().matches(/^[0-9A-Za-z._\\-가-힣 ]{2,20}$/)"
         },
@@ -42,9 +43,9 @@
     "GlobalChat": {
       ".read": true,
       "$msgId": {
-        ".write": "auth != null && newData.child('userId').val() === auth.uid",
+        ".write": "auth != null",
         "userId": {
-          ".validate": "newData.isString() && newData.val() === auth.uid"
+          ".validate": "newData.isString()"
         },
         "nickname": {
           ".validate": "newData.isString() && newData.val().matches(/^[0-9A-Za-z._\\-가-힣 ]{2,20}$/)"
@@ -66,27 +67,27 @@
     "MatchQueue": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid",
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['nickname','timestamp']) || !newData.exists()"
       }
     },
     "UserStatus": {
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     },
     "PrivateRooms": {
       "$roomId": {
-        ".read": "auth != null && data.child('info/participants/' + auth.uid).exists()",
+        ".read": "auth != null",
         "info": {
-          ".write": "auth != null && (data.child('participants/' + auth.uid).exists() || (!data.exists() && newData.child('participants/' + auth.uid).exists()))"
+          ".write": "auth != null"
         },
         "messages": {
           "$msgId": {
-            ".write": "auth != null && root.child('PrivateRooms/' + $roomId + '/info/participants/' + auth.uid).exists()",
+            ".write": "auth != null",
             "userId": {
-              ".validate": "newData.isString() && newData.val() === auth.uid"
+              ".validate": "newData.isString()"
             },
             "nickname": {
               ".validate": "newData.isString() && newData.val().matches(/^[0-9A-Za-z._\\-가-힣 ]{2,20}$/)"
@@ -105,33 +106,33 @@
       }
     },
     "makgoraStats": {
+      ".read": true,
       "$uid": {
-        ".read": true,
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null"
       }
     },
     "makgoraHistory": {
+      ".read": true,
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null"
       }
     },
     "HeadToHead": {
+      ".read": true,
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null"
       }
     },
     "MakgoraInvites": {
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
+        ".read": "auth != null",
         ".write": "auth != null"
       }
     },
     "MakgoraQueue": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null"
       }
     },
     "events": {
