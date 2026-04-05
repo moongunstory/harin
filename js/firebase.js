@@ -428,3 +428,201 @@ window.FirebaseAPI = {
         } catch(e) {}
     }
 };
+
+// =============================================
+// 🚨 서버 한도 초과 감지기
+// Firebase에서 PERMISSION_DENIED 또는 quota 에러가 오면 팝업을 띄웁니다.
+// =============================================
+window._harinServerDownShown = false;
+
+function _harinShowServerDownPopup() {
+    if (window._harinServerDownShown) return;
+    window._harinServerDownShown = true;
+
+    // 팝업 컨테이너가 이미 있으면 표시
+    const popup = document.getElementById('harin-server-down-popup');
+    if (popup) {
+        popup.classList.add('visible');
+        return;
+    }
+
+    // 동적으로 팝업 생성 (HTML에 없을 경우 대비)
+    const overlay = document.createElement('div');
+    overlay.id = 'harin-server-down-popup';
+    overlay.className = 'visible';
+    overlay.innerHTML = `
+        <div class="harin-server-down-box">
+            <img src="assets/other/server_down.webp" alt="서버 다운 하린이" class="harin-server-down-img" />
+            <h2 class="harin-server-down-title">서버 폭주로 하린이가 기절했습니다! 😭</h2>
+            <p class="harin-server-down-msg">
+                무료 서버가 오늘의 한도를 다 써버렸어요.<br>
+                내일 아침 <strong>9시</strong>에 서버가 부활하면 다시 와주세요!
+            </p>
+            <div class="harin-server-down-timer" id="harin-revival-timer">부활까지 계산 중...</div>
+            <button class="harin-server-down-btn" onclick="document.getElementById('harin-server-down-popup').classList.remove('visible'); window._harinServerDownShown = false;">
+                그래도 둘러볼게요 👀
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // 스타일 주입 (CSS 파일에 없을 경우 대비)
+    if (!document.getElementById('harin-server-down-style')) {
+        const style = document.createElement('style');
+        style.id = 'harin-server-down-style';
+        style.textContent = `
+            #harin-server-down-popup {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 99999;
+                background: rgba(10, 5, 20, 0.88);
+                backdrop-filter: blur(8px);
+                align-items: center;
+                justify-content: center;
+            }
+            #harin-server-down-popup.visible {
+                display: flex;
+                animation: harinFadeIn 0.4s ease;
+            }
+            @keyframes harinFadeIn {
+                from { opacity: 0; transform: scale(0.92); }
+                to   { opacity: 1; transform: scale(1); }
+            }
+            .harin-server-down-box {
+                background: linear-gradient(135deg, #1a0a2e 0%, #0d0020 100%);
+                border: 1px solid rgba(180, 120, 255, 0.35);
+                border-radius: 24px;
+                box-shadow: 0 0 60px rgba(150, 80, 255, 0.25), 0 20px 60px rgba(0,0,0,0.6);
+                padding: 40px 32px 32px;
+                max-width: 420px;
+                width: 90%;
+                text-align: center;
+                position: relative;
+            }
+            .harin-server-down-img {
+                width: 180px;
+                height: auto;
+                border-radius: 16px;
+                margin-bottom: 20px;
+                box-shadow: 0 8px 32px rgba(150, 80, 255, 0.3);
+                animation: harinFloat 3s ease-in-out infinite;
+            }
+            @keyframes harinFloat {
+                0%, 100% { transform: translateY(0); }
+                50%       { transform: translateY(-8px); }
+            }
+            .harin-server-down-title {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #f0d6ff;
+                margin: 0 0 12px;
+                line-height: 1.4;
+            }
+            .harin-server-down-msg {
+                font-size: 0.95rem;
+                color: #c9a8e8;
+                line-height: 1.7;
+                margin: 0 0 20px;
+            }
+            .harin-server-down-msg strong {
+                color: #e879f9;
+                font-size: 1.1em;
+            }
+            .harin-server-down-timer {
+                background: rgba(150, 80, 255, 0.15);
+                border: 1px solid rgba(150, 80, 255, 0.3);
+                border-radius: 12px;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+                color: #d8b4fe;
+                margin-bottom: 24px;
+                font-variant-numeric: tabular-nums;
+            }
+            .harin-server-down-btn {
+                background: linear-gradient(135deg, #7c3aed, #a855f7);
+                border: none;
+                border-radius: 12px;
+                color: white;
+                font-size: 0.95rem;
+                font-weight: 600;
+                padding: 12px 28px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 20px rgba(150, 80, 255, 0.4);
+            }
+            .harin-server-down-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 28px rgba(150, 80, 255, 0.55);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 부활 타이머 (다음 날 오전 9시까지 카운트다운)
+    function updateRevivalTimer() {
+        const now = new Date();
+        const next9am = new Date();
+        next9am.setHours(9, 0, 0, 0);
+        if (now >= next9am) next9am.setDate(next9am.getDate() + 1);
+
+        const diff = next9am - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+
+        const timerEl = document.getElementById('harin-revival-timer');
+        if (timerEl) {
+            timerEl.textContent = `🌅 부활까지 ${h}시간 ${m}분 ${s}초 남았어요`;
+        }
+    }
+    updateRevivalTimer();
+    setInterval(updateRevivalTimer, 1000);
+}
+
+// Firebase 에러 전역 감지 (db가 연결된 경우에만)
+if (db) {
+    // .info/connected 감지: 연결 끊김 탐지는 하되 팝업은 quota 에러에만
+    db.ref('.info/serverTimeOffset').once('value').catch((err) => {
+        if (err && (err.code === 'PERMISSION_DENIED' ||
+                    (err.message && err.message.toLowerCase().includes('quota')))) {
+            _harinShowServerDownPopup();
+        }
+    });
+
+    // GlobalStats 읽기 실패 = 권한 에러 or quota 초과
+    const _origGetInitialData = window.FirebaseAPI.getInitialData;
+    window.FirebaseAPI.getInitialData = async function() {
+        try {
+            const result = await _origGetInitialData();
+            return result;
+        } catch(err) {
+            if (err && (err.code === 'PERMISSION_DENIED' ||
+                        (err.message && err.message.toLowerCase().includes('quota')))) {
+                _harinShowServerDownPopup();
+            }
+            return defaultStats;
+        }
+    };
+}
+
+// GlobalStats 리스너에서 에러 감지
+if (db) {
+    const _origListen = window.FirebaseAPI.listenToGlobalStats;
+    window.FirebaseAPI.listenToGlobalStats = function(callback) {
+        if (!db) { _origListen(callback); return; }
+        db.ref('GlobalStats').on('value',
+            (snapshot) => { if(snapshot.exists()) callback(snapshot.val()); },
+            (err) => {
+                if (err && (err.code === 'PERMISSION_DENIED' ||
+                            (err.message && err.message.toLowerCase().includes('quota')))) {
+                    _harinShowServerDownPopup();
+                }
+            }
+        );
+    };
+}
+
+// window 전역에 수동 트리거 노출 (테스트용: window._harinShowServerDownPopup())
+window._harinShowServerDownPopup = _harinShowServerDownPopup;
+

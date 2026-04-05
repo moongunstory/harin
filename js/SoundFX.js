@@ -1,4 +1,4 @@
-// Web Audio API를 활용한 자체 효과음 합성 모듈
+// Web Audio API를 사용한 게임 효과음 라이브러리
 class SoundFX {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -11,8 +11,7 @@ class SoundFX {
 
         osc.type = type;
         osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
-        
-        // Envelope
+
         gainNode.gain.setValueAtTime(volume, this.ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
 
@@ -28,17 +27,16 @@ class SoundFX {
     }
 
     playMbtiClick(type) {
-        // E, I, S, N, T, F, J, P 별로 차별화된 사운드 재생
         switch (type) {
-            case 'E': this.playOscillator('sine', 1200, 0.15, 0.1); break;     // 높고 밝음
-            case 'I': this.playOscillator('triangle', 400, 0.2, 0.1); break;    // 낮고 차분함
-            case 'S': this.playOscillator('square', 600, 0.08, 0.05); break;   // 짧고 명확함
-            case 'N': this.playOscillator('sine', 900, 0.25, 0.08); break;     // 부드럽고 김
-            case 'T': this.playOscillator('sawtooth', 750, 0.05, 0.075); break; // 기계적이고 짧음 (볼륨 1.5배 증가)
-            case 'F': this.playOscillator('triangle', 650, 0.2, 0.1); break;   // 따뜻함
-            case 'J': this.playOscillator('square', 800, 0.1, 0.06); break;    // 단호함
-            case 'P': this.playOscillator('sine', 1000, 0.15, 0.08); break;    // 통통 튐
-            default: this.playOscillator('sine', 800, 0.1, 0.05);
+            case 'E': this.playOscillator('sine',     1200, 0.15, 0.1);  break;
+            case 'I': this.playOscillator('triangle',  400, 0.2,  0.1);  break;
+            case 'S': this.playOscillator('square',    600, 0.08, 0.05); break;
+            case 'N': this.playOscillator('sine',      900, 0.25, 0.08); break;
+            case 'T': this.playOscillator('sawtooth',  750, 0.05, 0.075);break;
+            case 'F': this.playOscillator('triangle',  650, 0.2,  0.1);  break;
+            case 'J': this.playOscillator('square',    800, 0.1,  0.06); break;
+            case 'P': this.playOscillator('sine',     1000, 0.15, 0.08); break;
+            default:  this.playOscillator('sine',      800, 0.1,  0.05);
         }
     }
 
@@ -53,11 +51,11 @@ class SoundFX {
         const gainNode = this.ctx.createGain();
 
         osc.type = 'square';
-        osc.frequency.setValueAtTime(440, now); // A4
-        osc.frequency.setValueAtTime(554.37, now + 0.1); // C#5
-        osc.frequency.setValueAtTime(659.25, now + 0.2); // E5
-        osc.frequency.setValueAtTime(880, now + 0.3); // A5
-        
+        osc.frequency.setValueAtTime(440,    now);
+        osc.frequency.setValueAtTime(554.37, now + 0.1);
+        osc.frequency.setValueAtTime(659.25, now + 0.2);
+        osc.frequency.setValueAtTime(880,    now + 0.3);
+
         gainNode.gain.setValueAtTime(0.05, now);
         gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
 
@@ -77,43 +75,36 @@ class SoundFX {
         osc1.type = 'square';
         osc2.type = 'sine';
 
-        // 화려한 아르페지오 (전설템 드랍 같은 느낌)
-        osc1.frequency.setValueAtTime(523.25, now);       // C5
-        osc2.frequency.setValueAtTime(1046.50, now);      // C6
-        
-        osc1.frequency.setValueAtTime(659.25, now + 0.1); // E5
-        osc2.frequency.setValueAtTime(1318.51, now + 0.1);// E6
-        
-        osc1.frequency.setValueAtTime(783.99, now + 0.2); // G5
-        osc2.frequency.setValueAtTime(1567.98, now + 0.2);// G6
-        
-        osc1.frequency.setValueAtTime(1046.50, now + 0.3);// C6
-        osc2.frequency.setValueAtTime(2093.00, now + 0.3);// C7
-        
+        osc1.frequency.setValueAtTime(523.25,  now);
+        osc2.frequency.setValueAtTime(1046.50, now);
+        osc1.frequency.setValueAtTime(659.25,  now + 0.1);
+        osc2.frequency.setValueAtTime(1318.51, now + 0.1);
+        osc1.frequency.setValueAtTime(783.99,  now + 0.2);
+        osc2.frequency.setValueAtTime(1567.98, now + 0.2);
+        osc1.frequency.setValueAtTime(1046.50, now + 0.3);
+        osc2.frequency.setValueAtTime(2093.00, now + 0.3);
+
         gainNode.gain.setValueAtTime(0.08, now);
         gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
 
         osc1.connect(gainNode);
         osc2.connect(gainNode);
         gainNode.connect(this.ctx.destination);
-        
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + 1.2);
-        osc2.stop(now + 1.2);
+
+        osc1.start(now); osc2.start(now);
+        osc1.stop(now + 1.2); osc2.stop(now + 1.2);
     }
 
     playCombo(comboCount) {
-        // 콤보가 쌓일수록 주파수가 높아짐
         const baseFreq = 300;
-        const addFreq = Math.min(comboCount * 50, 1000); 
+        const addFreq = Math.min(comboCount * 50, 1000);
         this.playOscillator('triangle', baseFreq + addFreq, 0.2, 0.1);
     }
 
     playDamage() {
         this.playOscillator('sawtooth', 150, 0.2, 0.1);
     }
-    
+
     playBuff() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const now = this.ctx.currentTime;
@@ -121,9 +112,9 @@ class SoundFX {
         const gainNode = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(800, now); 
-        osc.frequency.exponentialRampToValueAtTime(2000, now + 0.5); 
-        
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(2000, now + 0.5);
+
         gainNode.gain.setValueAtTime(0.05, now);
         gainNode.gain.linearRampToValueAtTime(0.0, now + 0.5);
 
@@ -133,24 +124,18 @@ class SoundFX {
         osc.stop(now + 0.5);
     }
 
-    // 공유 버프 활성화 사운드 (2.5초, 상승 아르페지오 + 반짝임)
     playShareBuff() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const now = this.ctx.currentTime;
 
-        // 메인 멜로디 (상승 아르페지오)
         const melody = [
-            [261.63, 0.0],   // C4
-            [329.63, 0.18],  // E4
-            [392.00, 0.36],  // G4
-            [523.25, 0.54],  // C5
-            [659.25, 0.72],  // E5
-            [783.99, 0.90],  // G5
-            [1046.5, 1.08],  // C6
+            [261.63, 0.0],  [329.63, 0.18], [392.00, 0.36],
+            [523.25, 0.54], [659.25, 0.72], [783.99, 0.90],
+            [1046.5, 1.08],
         ];
 
         melody.forEach(([freq, t]) => {
-            const osc = this.ctx.createOscillator();
+            const osc  = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(freq, now + t);
@@ -163,10 +148,8 @@ class SoundFX {
             osc.stop(now + t + 0.45);
         });
 
-        // 반짝임 레이어 (고주파 shimmer)
-        const shimmerFreqs = [2093, 2637, 3136];
-        shimmerFreqs.forEach((freq, i) => {
-            const osc = this.ctx.createOscillator();
+        [2093, 2637, 3136].forEach((freq, i) => {
+            const osc  = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, now + 1.2 + i * 0.15);
@@ -179,8 +162,7 @@ class SoundFX {
             osc.stop(now + 1.2 + i * 0.15 + 0.65);
         });
 
-        // 베이스 드론 (저음 warm pad)
-        const base = this.ctx.createOscillator();
+        const base     = this.ctx.createOscillator();
         const baseGain = this.ctx.createGain();
         base.type = 'sine';
         base.frequency.setValueAtTime(130.81, now);
@@ -193,45 +175,44 @@ class SoundFX {
         base.start(now);
         base.stop(now + 2.5);
     }
-    
+
     playFever() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const now = this.ctx.currentTime;
-        
-        // 8비트 사이렌/레벨업 느낌의 화음
+
         [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-            const osc = this.ctx.createOscillator();
+            const osc      = this.ctx.createOscillator();
             const gainNode = this.ctx.createGain();
-            
+
             osc.type = 'square';
             osc.frequency.setValueAtTime(freq, now + idx * 0.1);
-            
+
             gainNode.gain.setValueAtTime(0, now + idx * 0.1);
             gainNode.gain.linearRampToValueAtTime(0.08, now + idx * 0.1 + 0.05);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
-            
+
             osc.connect(gainNode);
             gainNode.connect(this.ctx.destination);
-            
+
             osc.start(now + idx * 0.1);
             osc.stop(now + idx * 0.1 + 0.35);
         });
     }
-    
+
     playVictory() {
-        this.playAchievement(); // 일단 업적 사운드 활용, 추후 필요시 고도화
+        this.playAchievement();
     }
-    
+
     playDefeat() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
+        const now      = this.ctx.currentTime;
+        const osc      = this.ctx.createOscillator();
         const gainNode = this.ctx.createGain();
 
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(300, now); 
-        osc.frequency.exponentialRampToValueAtTime(50, now + 1.0); 
-        
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 1.0);
+
         gainNode.gain.setValueAtTime(0.1, now);
         gainNode.gain.linearRampToValueAtTime(0.0, now + 1.0);
 
@@ -243,10 +224,10 @@ class SoundFX {
 
     playGameStart() {
         if (this.ctx.state === 'suspended') this.ctx.resume();
-        const now = this.ctx.currentTime;
-        // 드럼 롤 같은 느낌
-        const drum = this.ctx.createOscillator();
+        const now      = this.ctx.currentTime;
+        const drum     = this.ctx.createOscillator();
         const drumGain = this.ctx.createGain();
+
         drum.type = 'square';
         drum.frequency.setValueAtTime(100, now);
         drumGain.gain.setValueAtTime(0.1, now);
@@ -256,10 +237,9 @@ class SoundFX {
         drum.start(now);
         drum.stop(now + 0.5);
 
-        // 상승 화음
         setTimeout(() => {
             [523.25, 659.25, 783.99].forEach((freq, i) => {
-                const osc = this.ctx.createOscillator();
+                const osc  = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(freq, now + 0.5 + i * 0.1);
@@ -274,5 +254,5 @@ class SoundFX {
     }
 }
 
-// 전역 싱글톤 등록
+// 전역 등록
 window.soundFX = new SoundFX();

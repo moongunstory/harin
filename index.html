@@ -4,10 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; media-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app https://api.trongrid.io; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com; base-uri 'self'; object-src 'none'; form-action 'self'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; media-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app https://api.trongrid.io; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://pagead2.googlesyndication.com; base-uri 'self'; object-src 'none'; form-action 'self'; upgrade-insecure-requests">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Harin MBTI Clicker</title>
-    <meta name="description" content="내 클릭이 하린이의 MBTI를 바꾼다! 하린과 함께하는 글로벌 MBTI 대결">
+
+    <!-- Primary Meta -->
+    <title>하린이 MBTI WAR — 내 클릭이 하린의 MBTI를 바꾼다!</title>
+    <meta name="description" content="하린이의 MBTI가 당신의 클릭으로 실시간으로 바뀝니다! 전 세계 유저와 함께하는 글로벌 MBTI 투표 & 막고라 대결. 지금 바로 참여하세요.">
+    <meta name="keywords" content="MBTI, 하린, MBTI 투표, MBTI 배틀, 클리커, 하린 MBTI, MBTI 게임, 심리유형, 막고라">
+    <meta name="author" content="Harin">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://harin-mbti.web.app/">
+
+    <!-- Open Graph (SNS 공유 미리보기) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://harin-mbti.web.app/">
+    <meta property="og:title" content="하린이 MBTI WAR — 내 클릭이 하린의 MBTI를 바꾼다!">
+    <meta property="og:description" content="하린이의 MBTI가 당신의 클릭으로 실시간으로 바뀝니다! 전 세계 유저와 함께하는 글로벌 MBTI 투표 & 막고라 대결.">
+    <meta property="og:image" content="https://harin-mbti.web.app/assets/MBTI/standard.webp">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="하린이 MBTI WAR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="하린이 MBTI WAR">
+    <meta name="twitter:description" content="내 클릭이 하린이의 MBTI를 바꾼다! 글로벌 MBTI 투표 & 막고라 대결">
+    <meta name="twitter:image" content="https://harin-mbti.web.app/assets/MBTI/standard.webp">
+
+    <!-- 성능: CSS 미리 로드 -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="assets/MBTI/standard.webp" as="image" type="image/webp">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" as="style">
+
+    <!-- 다음 페이지 미리 로드 -->
+    <link rel="prefetch" href="donate.html">
+
+    <!-- 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -284,6 +315,7 @@
                 style="margin-bottom: 24px;" onclick="if(window.AchievementAPI) window.AchievementAPI.deferUnlock('harin_insta')">
                 <span class="icon">📸</span> 하린이 인스타 보러 가기
             </a>
+            <a href="privacy.html" style="font-size:0.72rem; color:#444; text-decoration:none; display:block; margin-top:8px;" rel="noopener">개인정보처리방침</a>
         </footer>
 
         <!-- 랭킹 보드 (화면 하단 중앙 고정, 토글형) -->
@@ -693,17 +725,18 @@
     <!-- 스크립트 모듈 -->
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="js/security.js"></script>
-    <script src="js/firebase.js"></script>
+    <!-- SoundFX/SoundManager: 다른 모듈이 의존하므로 defer 없이 순서 보장 -->
     <script src="js/SoundFX.js"></script>
     <script src="js/SoundManager.js"></script>
-    <script src="js/profile.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/clicker.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/achievements.js"></script>
-    <script src="js/makgora.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/security.js" defer></script>
+    <script src="js/firebase.js" defer></script>
+    <script src="js/profile.js" defer></script>
+    <script src="js/chat.js" defer></script>
+    <script src="js/clicker.js" defer></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/achievements.js" defer></script>
+    <script src="js/makgora.js" defer></script>
+    <script src="js/main.js" defer></script>
 
     <!-- 슈퍼챗 월드 메시지 리스너 -->
     <script>
