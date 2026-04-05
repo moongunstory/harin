@@ -1160,6 +1160,11 @@ header {
     to   { opacity: 1; }
 }
 
+@keyframes mg-bounce {
+    from { transform: translateY(0); opacity: 0.5; }
+    to   { transform: translateY(-8px); opacity: 1; }
+}
+
 @keyframes mg-shake {
     0%, 100% { transform: translateX(0); }
     25%       { transform: translateX(-6px); }

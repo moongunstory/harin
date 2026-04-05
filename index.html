@@ -653,6 +653,22 @@
         </div>
     </div>
 
+    <!-- ⚔️ 막고라: 신청 대기 로딩 오버레이 -->
+    <div id="makgora-waiting-overlay" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:320px; text-align:center; padding:2rem 1.5rem;">
+            <div style="font-size:3rem; margin-bottom:16px; animation:mg-pulse 0.8s infinite alternate;">⚔️</div>
+            <h2 style="margin-bottom:8px; font-size:1.3rem;">막고라 신청 중...</h2>
+            <p id="makgora-waiting-msg" style="color:#fbc2eb; font-size:0.95rem; margin-bottom:24px;">상대방의 수락을 기다리고 있습니다.</p>
+            <div style="display:flex; justify-content:center; gap:6px; margin-bottom:20px;">
+                <div style="width:10px;height:10px;background:#ff6b6b;border-radius:50%;animation:mg-bounce 0.8s 0s infinite alternate;"></div>
+                <div style="width:10px;height:10px;background:#f6c90e;border-radius:50%;animation:mg-bounce 0.8s 0.2s infinite alternate;"></div>
+                <div style="width:10px;height:10px;background:#43e97b;border-radius:50%;animation:mg-bounce 0.8s 0.4s infinite alternate;"></div>
+            </div>
+            <div id="makgora-waiting-timer" style="font-size:0.82rem; color:#777; margin-bottom:14px;"></div>
+            <button id="btn-cancel-makgora-invite" class="modal-btn ghost" style="font-size:0.9rem; padding:8px 16px;">취소</button>
+        </div>
+    </div>
+
     <!-- ⚔️ 막고라: 턴제 심리전 오버레이 -->
     <div id="makgora-overlay"
         style="display:none; position:fixed; inset:0; background:rgba(5,5,15,0.97); backdrop-filter:blur(10px); z-index:10000; flex-direction:row; color:#fff; box-sizing:border-box; opacity:0; transition:opacity 0.5s ease-in-out;">
