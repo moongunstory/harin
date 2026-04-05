@@ -136,6 +136,18 @@
         ".write": "auth != null"
       }
     },
+    "MakgoraInviteResponse": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "MakgoraRooms": {
+      "$roomId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
     "MakgoraQueue": {
       ".read": "auth != null",
       "$uid": {

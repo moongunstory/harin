@@ -295,13 +295,16 @@ window.ProfileAPI = {
             // 1. 전체 전적
             db.ref(`makgoraStats/${userId}`).once('value').then(snap => {
                 const data = snap.val() || {wins:0, losses:0, draws:0};
-                const total = data.wins + data.losses + data.draws;
-                const drawText = data.draws ? ` ${data.draws}무` : '';
-                const recordText = `${total}전 ${data.wins}승 ${data.losses}패${drawText}`;
+                const w = data.wins   || 0;
+                const l = data.losses || 0;
+                const d = data.draws  || 0;
+                const total = w + l + d;
+                const drawText = d ? ` ${d}무` : '';
+                const recordText = total > 0
+                    ? `${total}전 ${w}승 ${l}패${drawText}`
+                    : '전적 없음';
                 let statsEl = document.getElementById('my-makgora-record-display');
-                if(statsEl) {
-                    statsEl.style.display = 'none';
-                }
+                if(statsEl) { statsEl.style.display = 'none'; }
                 const historyBtn = document.getElementById('btn-show-makgora-history');
                 if(historyBtn) {
                     historyBtn.innerText = `⚔️ ${recordText} (10전 전적 보기)`;
@@ -533,9 +536,16 @@ window.ProfileAPI = {
                     
                     db.ref(`makgoraStats/${userId}`).once('value').then(mSnap => {
                         const mData = mSnap.val() || {wins:0, losses:0, draws:0};
+                        const mW = mData.wins   || 0;
+                        const mL = mData.losses || 0;
+                        const mD = mData.draws  || 0;
+                        const mTotal = mW + mL + mD;
+                        const mLabel = mTotal > 0
+                            ? `${mTotal}전 ${mW}승 ${mL}패${mD ? ' ' + mD + '무' : ''}`
+                            : '전적 없음';
                         this.upStats.innerHTML += `
                             <div style="grid-column: 1 / -1; font-weight:bold; color:#ff6b6b; margin-top:6px; border-top:1px solid #444; padding-top:6px;">
-                                <button onclick="window.ProfileAPI.loadMakgoraHistory('${userId}')" style="background: linear-gradient(90deg, #ff0844, #ffb199); color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:800; width:100%;">⚔️ ${mData.wins} 전 ${mData.wins} 승 ${mData.losses} 패</button>
+                                <button onclick="window.ProfileAPI.loadMakgoraHistory('${userId}')" style="background: linear-gradient(90deg, #ff0844, #ffb199); color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:800; width:100%;">⚔️ ${mLabel}</button>
                             </div>`;
                         
                         const myId = localStorage.getItem('mbti_userid');

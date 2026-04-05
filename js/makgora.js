@@ -19,17 +19,22 @@ window.MakgoraAPI = (() => {
         turn: 1,
         isSudden: false,
         myHP: INIT_HP, rivalHP: INIT_HP,
-        myBuffed: false,      // 축적 사용 여부
+        myBuffed: false,
         rivalBuffed: false,
-        myBan: null,          // 내가 통제로 걸어놓은 상대 행동 금지
-        rivalBan: null,       // 상대가 통제로 건 내 행동 금지
-        myAction: null,       // 현재 턴 선택
-        myBanTarget: null,    // 통제 시 봉쇄 대상
+        myAction: null,
         rivalName: '상대방',
         isMock: true,
-        roomRef: null,
-        historyListenerRef: null, // [신규] 기권 감지용 리스너
+        isBot: false,
+        rivalId: null,
+        roomId: null,           // Firebase 룸 ID
         pendingRivalName: null,
+        pendingFromId: null,    // 초대 보낸 상대 ID
+        pendingChallengeRivalId: null, // 내가 신청한 상대 ID
+        inviteTimeoutTimer: null,
+        inviteResponseRef: null,
+        roomForfeitRef: null,   // 기권 신호 리스너
+        roomTurnRef: null,      // 현재 턴 Firebase ref
+        roomRef: null,
         timer: null,
         timerLeft: 0,
     };
@@ -39,6 +44,7 @@ window.MakgoraAPI = (() => {
     let myNameEl, rivalNameEl, myHpEl, rivalHpEl, myHpBar, rivalHpBar;
     let turnLabel, maxTurnsEl, statusBox, logBox, buffLabel, banLabel, timerEl;
     let actionBtns, banSelect, suddenLabel;
+    let waitingOverlay, waitingMsg, waitingTimerEl;
 
     // ── 매칭 큐 상태 ──────────────────────
     let matchQueueRef = null;
@@ -57,6 +63,34 @@ window.MakgoraAPI = (() => {
     }
     function actionEmoji(a) {
         return { charge:'🟥', parry:'🟦', store:'🟨', control:'🟧' }[a] || '';
+    }
+
+    // ── 인앱 토스트 알림 ──────────────────
+    function showNotification(msg, icon = '📢') {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,30,0.97);border:1px solid rgba(255,255,255,0.2);padding:14px 22px;border-radius:20px;z-index:99999;color:#fff;font-size:0.92rem;display:flex;align-items:center;gap:10px;white-space:nowrap;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;';
+        toast.innerHTML = `<span style="font-size:1.3rem">${icon}</span><span>${msg}</span>`;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ── 초대 거절 ─────────────────────────
+    function declineInvite() {
+        if (inviteModal) inviteModal.classList.add('hidden');
+        const fromId = state.pendingFromId;
+        if (!fromId) return;
+        const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+        if (db) {
+            db.ref(`MakgoraInviteResponse/${fromId}`).set({ accepted: false });
+        }
     }
 
     // ── DOM 캐시 ──────────────────────────
@@ -87,6 +121,9 @@ window.MakgoraAPI = (() => {
         inviteText   = $('makgora-invite-text');
         acceptBtn    = $('btn-makgora-accept');
         declineBtn   = $('btn-makgora-decline');
+        waitingOverlay = $('makgora-waiting-overlay');
+        waitingMsg     = $('makgora-waiting-msg');
+        waitingTimerEl = $('makgora-waiting-timer');
     }
 
     // ── 이벤트 바인딩 ─────────────────────
@@ -106,16 +143,30 @@ window.MakgoraAPI = (() => {
 
         if (finishBtn) finishBtn.addEventListener('click', closeOverlay);
         if (acceptBtn) acceptBtn.addEventListener('click', acceptInvite);
-        if (declineBtn) declineBtn.addEventListener('click', () => {
-            if (inviteModal) inviteModal.classList.add('hidden');
+        if (declineBtn) declineBtn.addEventListener('click', declineInvite);
+
+        // 초대 대기 취소 버튼
+        const cancelInviteBtn = $('btn-cancel-makgora-invite');
+        if (cancelInviteBtn) cancelInviteBtn.addEventListener('click', () => {
+            clearTimeout(state.inviteTimeoutTimer);
+            if (state.inviteResponseRef) {
+                state.inviteResponseRef.off('value');
+                state.inviteResponseRef = null;
+            }
+            if (waitingOverlay) waitingOverlay.classList.add('hidden');
+            const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+            if (db && state.pendingChallengeRivalId) {
+                db.ref(`MakgoraInvites/${state.pendingChallengeRivalId}`).remove();
+            }
+            state.pendingChallengeRivalId = null;
         });
-        
+
         const surrenderBtn = $('btn-makgora-surrender');
         if (surrenderBtn) {
             surrenderBtn.addEventListener('click', () => {
                 if (!state.active) return;
                 if (confirm('정말 기권하시겠습니까? 기권 시 판정패로 기록됩니다.')) {
-                    state.myHP = 0; // Forced loss
+                    state.myHP = 0;
                     state.forfeit = true;
                     endBattle();
                 }
@@ -200,6 +251,11 @@ window.MakgoraAPI = (() => {
 
     // ── 대결 시작 ─────────────────────────
     async function startBattle(rivalName, isMock = true, rivalId = null, isBot = false) {
+        const myId = localStorage.getItem('mbti_userid');
+        const roomId = (!isMock && !isBot && myId && rivalId)
+            ? [myId, rivalId].sort().join('__')
+            : null;
+
         state = {
             ...state,
             active: false,
@@ -212,6 +268,10 @@ window.MakgoraAPI = (() => {
             rivalId: rivalId,
             isMock,
             isBot,
+            roomId,
+            forfeit: false,
+            roomForfeitRef: null,
+            roomTurnRef: null,
         };
 
         const myNick = localStorage.getItem('mbti_nickname') || '나';
@@ -255,21 +315,20 @@ window.MakgoraAPI = (() => {
                 if (window.soundManager) window.soundManager.playAchievement();
                 beginTurn();
 
-                // [신규] 사용자 간 대결일 경우 상대 기권 여부 실시간 수신
-                if (!isMock && !isBot && rivalId) {
+                // 사용자 간 대결: Firebase 룸에서 상대 기권 실시간 감지
+                if (!isMock && !isBot && rivalId && state.roomId) {
                     const db = window.firebase?.apps?.length ? window.firebase.database() : null;
                     if (db) {
-                        const myId = localStorage.getItem('mbti_userid');
-                        const startTime = Date.now();
-                        state.historyListenerRef = db.ref(`makgoraHistory/${myId}`);
-                        state.historyListenerRef.on('child_added', snap => {
+                        const myIdForForfeit = localStorage.getItem('mbti_userid');
+                        state.roomForfeitRef = db.ref(`MakgoraRooms/${state.roomId}/forfeit`);
+                        state.roomForfeitRef.on('value', snap => {
                             if (!state.active) return;
-                            const rec = snap.val();
-                            // 나에게 추가된 기록 중, 현재 상대가 날 이겼다고 적혀있는데 forfeit=true라면 상대의 기권승록!
-                            // (아까 강제주입 로직에서 상대방의 기록을 꽂아준 것을 감지)
-                            if (rec && rec.forfeit && rec.timestamp >= startTime) {
+                            if (!snap.exists()) return;
+                            const data = snap.val();
+                            // 상대가 기권한 경우만 처리
+                            if (data && data.by && data.by !== myIdForForfeit) {
                                 state.rivalHP = 0;
-                                state.myHP = INIT_HP; // 승리 보장 (UI 편의상)
+                                state.myHP = Math.max(state.myHP, 1);
                                 endBattle();
                             }
                         });
@@ -310,17 +369,36 @@ window.MakgoraAPI = (() => {
         clearInterval(state.timer);
 
         state.myAction = action;
-
         disableAllActions();
         setStatus(`✅ "${actionName(action)}" 선택 완료! 상대 응답 대기 중...`);
 
         if (state.isMock) {
-            // 봇에게 선택 지연 시간 (고민하는 느낌 추가)
             const botRes = botChoose();
             await sleep(800 + Math.random() * 1200);
             await resolveTurn(action, botRes);
+        } else {
+            // ── Firebase 실시간 1v1 턴 처리 ────────────────────────
+            const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+            if (!db || !state.roomId) return;
+            const myId = localStorage.getItem('mbti_userid');
+            const turnRef = db.ref(`MakgoraRooms/${state.roomId}/turn${state.turn}`);
+            state.roomTurnRef = turnRef;
+
+            // 내 행동 저장
+            turnRef.child(myId).set(action);
+
+            // 양쪽 행동이 모두 올 때까지 대기
+            turnRef.on('value', snap => {
+                if (!state.active) { turnRef.off('value'); return; }
+                const all = snap.val();
+                if (!all) return;
+                if (all[myId] && all[state.rivalId]) {
+                    turnRef.off('value');
+                    state.roomTurnRef = null;
+                    resolveTurn(all[myId], { action: all[state.rivalId] });
+                }
+            });
         }
-        // Firebase 실시간 모드는 firebase 연동 필요 (현재 Mock 위주)
     }
 
     // ── 봇 AI ─────────────────────────────
@@ -511,7 +589,9 @@ window.MakgoraAPI = (() => {
         state.active = false;
         clearInterval(state.timer);
 
-        const myNick = localStorage.getItem('mbti_nickname') || '나';
+        // 현재 턴 리스너 정리
+        if (state.roomTurnRef) { state.roomTurnRef.off('value'); state.roomTurnRef = null; }
+
         let won, draw, icon, title, desc;
 
         if (state.myHP <= 0 && state.rivalHP <= 0) {
@@ -522,6 +602,15 @@ window.MakgoraAPI = (() => {
             won = false;
         } else {
             draw = true;
+        }
+
+        // 기권 시 상대에게 Firebase로 신호 전송 (실시간 알림)
+        if (state.forfeit && !state.isBot && state.roomId) {
+            const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+            const myId = localStorage.getItem('mbti_userid');
+            if (db && myId) {
+                db.ref(`MakgoraRooms/${state.roomId}/forfeit`).set({ by: myId });
+            }
         }
 
         if (draw) {
@@ -543,7 +632,6 @@ window.MakgoraAPI = (() => {
         if (resultDesc)  resultDesc.textContent  = desc;
         if (resultEl)    resultEl.style.display  = 'flex';
 
-        // Firebase 막고라 랭킹 업데이트
         saveMakgoraResult(won, draw);
     }
 
@@ -652,12 +740,32 @@ window.MakgoraAPI = (() => {
         state.active = false;
         clearInterval(state.timer);
         if (state.roomRef) { state.roomRef.off(); state.roomRef = null; }
-        if (state.historyListenerRef) { state.historyListenerRef.off(); state.historyListenerRef = null; }
+        if (state.roomForfeitRef) { state.roomForfeitRef.off(); state.roomForfeitRef = null; }
+        if (state.roomTurnRef) { state.roomTurnRef.off('value'); state.roomTurnRef = null; }
+        // 룸 데이터 정리
+        if (state.roomId && !state.isMock && !state.isBot) {
+            const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+            if (db) db.ref(`MakgoraRooms/${state.roomId}`).remove();
+        }
+        state.roomId = null;
     }
 
     function acceptInvite() {
         if (inviteModal) inviteModal.classList.add('hidden');
-        startBattle(state.pendingRivalName, false);
+        const fromId = state.pendingFromId;
+        const myId = localStorage.getItem('mbti_userid');
+        const myName = localStorage.getItem('mbti_nickname') || '익명';
+        if (fromId) {
+            const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+            if (db) {
+                db.ref(`MakgoraInviteResponse/${fromId}`).set({
+                    accepted: true,
+                    rivalId: myId,
+                    rivalName: myName
+                });
+            }
+        }
+        startBattle(state.pendingRivalName, false, fromId, false);
     }
 
     // ── Public API ────────────────────────
@@ -684,12 +792,57 @@ window.MakgoraAPI = (() => {
                 startBattle(rivalName, true, rivalId, true);
                 return;
             }
+
+            // ── 대기 오버레이 표시 ──────────────────────────
+            state.pendingChallengeRivalId = rivalId;
+            if (waitingOverlay) waitingOverlay.classList.remove('hidden');
+            if (waitingMsg) waitingMsg.textContent = `${rivalName}님의 수락을 기다리고 있습니다...`;
+
+            // ── 초대 전송 ──────────────────────────────────
             db.ref(`MakgoraInvites/${rivalId}`).set({
                 fromId:   myId,
                 fromName: localStorage.getItem('mbti_nickname') || '익명',
                 timestamp: Date.now()
-            }).then(() => {
-                alert(`${rivalName}님께 막고라를 신청했습니다! 수락을 기다리세요.`);
+            });
+
+            // ── 카운트다운 ─────────────────────────────────
+            let countdown = 15;
+            if (waitingTimerEl) waitingTimerEl.textContent = `${countdown}초 후 자동 취소`;
+            const timerInterval = setInterval(() => {
+                countdown--;
+                if (waitingTimerEl) waitingTimerEl.textContent = `${Math.max(0, countdown)}초 후 자동 취소`;
+            }, 1000);
+
+            const responseRef = db.ref(`MakgoraInviteResponse/${myId}`);
+            state.inviteResponseRef = responseRef;
+
+            const cleanup = () => {
+                clearInterval(timerInterval);
+                clearTimeout(state.inviteTimeoutTimer);
+                if (waitingOverlay) waitingOverlay.classList.add('hidden');
+                responseRef.off('value');
+                state.inviteResponseRef = null;
+                state.pendingChallengeRivalId = null;
+                db.ref(`MakgoraInvites/${rivalId}`).remove();
+                db.ref(`MakgoraInviteResponse/${myId}`).remove();
+            };
+
+            // ── 15초 타임아웃 ─────────────────────────────
+            state.inviteTimeoutTimer = setTimeout(() => {
+                cleanup();
+                showNotification(`${rivalName}님이 오프라인이거나 응답하지 않았습니다.`, '⏰');
+            }, 15000);
+
+            // ── 응답 리스닝 ───────────────────────────────
+            responseRef.on('value', snap => {
+                if (!snap.exists()) return;
+                const resp = snap.val();
+                cleanup();
+                if (resp.accepted) {
+                    startBattle(rivalName, false, rivalId, false);
+                } else {
+                    showNotification(`${rivalName}님이 막고라를 거절했습니다.`, '❌');
+                }
             });
         },
 
@@ -701,8 +854,11 @@ window.MakgoraAPI = (() => {
             db.ref(`MakgoraInvites/${myId}`).on('value', snap => {
                 if (!snap.exists()) return;
                 const data = snap.val();
-                if (Date.now() - data.timestamp > 15000) return;
+                // 응답 데이터는 무시
+                if (!data.fromName || !data.timestamp) return;
+                if (Date.now() - data.timestamp > 15000) { snap.ref.remove(); return; }
                 state.pendingRivalName = data.fromName;
+                state.pendingFromId = data.fromId; // 초대 보낸 상대 ID 저장
                 if (inviteText) inviteText.textContent = `${data.fromName}님이 막고라를 신청했습니다!`;
                 if (inviteModal) inviteModal.classList.remove('hidden');
                 snap.ref.remove();
