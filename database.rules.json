@@ -10,6 +10,13 @@
         }
       }
     },
+    "Nicknames": {
+      ".read": true,
+      "$nickname_lower": {
+        ".write": "auth != null",
+        ".validate": "newData.isString()"
+      }
+    },
     "Users": {
       ".read": true,
       "$uid": {

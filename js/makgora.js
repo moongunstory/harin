@@ -28,6 +28,7 @@ window.MakgoraAPI = (() => {
         rivalName: '상대방',
         isMock: true,
         roomRef: null,
+        historyListenerRef: null, // [신규] 기권 감지용 리스너
         pendingRivalName: null,
         timer: null,
         timerLeft: 0,
@@ -253,6 +254,27 @@ window.MakgoraAPI = (() => {
                 state.active = true;
                 if (window.soundManager) window.soundManager.playAchievement();
                 beginTurn();
+
+                // [신규] 사용자 간 대결일 경우 상대 기권 여부 실시간 수신
+                if (!isMock && !isBot && rivalId) {
+                    const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+                    if (db) {
+                        const myId = localStorage.getItem('mbti_userid');
+                        const startTime = Date.now();
+                        state.historyListenerRef = db.ref(`makgoraHistory/${myId}`);
+                        state.historyListenerRef.on('child_added', snap => {
+                            if (!state.active) return;
+                            const rec = snap.val();
+                            // 나에게 추가된 기록 중, 현재 상대가 날 이겼다고 적혀있는데 forfeit=true라면 상대의 기권승록!
+                            // (아까 강제주입 로직에서 상대방의 기록을 꽂아준 것을 감지)
+                            if (rec && rec.forfeit && rec.timestamp >= startTime) {
+                                state.rivalHP = 0;
+                                state.myHP = INIT_HP; // 승리 보장 (UI 편의상)
+                                endBattle();
+                            }
+                        });
+                    }
+                }
             } else {
                 if (window.soundManager) window.soundManager.playClick();
                 if (timerEl) timerEl.textContent = cd;
@@ -630,6 +652,7 @@ window.MakgoraAPI = (() => {
         state.active = false;
         clearInterval(state.timer);
         if (state.roomRef) { state.roomRef.off(); state.roomRef = null; }
+        if (state.historyListenerRef) { state.historyListenerRef.off(); state.historyListenerRef = null; }
     }
 
     function acceptInvite() {

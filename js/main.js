@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('nickname-modal').classList.remove('hidden');
     }
 
-    document.getElementById('nickname-submit').addEventListener('click', () => {
+    document.getElementById('nickname-submit').addEventListener('click', async () => {
         const input = document.getElementById('nickname-input').value.trim();
         const selectedMbti = document.getElementById('mbti-select').value;
         const errEl = document.getElementById('nickname-error');
@@ -38,8 +38,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         nickname = security.sanitizeNickname(input);
         mbtiType = security.sanitizeMbti(selectedMbti);
         if (!nickname) {
-            if(errEl) errEl.innerText = "닉네임은 2자 이상, 안전한 문자만 사용할 수 있어요.";
+            if(errEl) errEl.innerText = "🛑 2자 이상의 한글/영문/숫자만 가능해요.";
             return;
+        }
+
+        // 중복 검사
+        const db = window.firebase?.apps?.length ? window.firebase.database() : null;
+        if (db) {
+            const nicknameLower = nickname.toLowerCase().replace(/\s+/g, '');
+            const snap = await db.ref(`Nicknames/${nicknameLower}`).once('value');
+            if (snap.exists()) {
+                if(errEl) errEl.innerText = "🛑 이미 사용 중인 닉네임이에요.";
+                return;
+            }
         }
 
         userId = security.generateUserId('usr');
@@ -194,12 +205,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ? Math.round(u.wins / (u.wins + u.losses + u.draws) * 100) : 0;
                 const nicknameLabel = security.escapeHtml(security.sanitizeNickname(u.nickname) || '익명');
                 const mbtiLabel = security.escapeHtml(security.sanitizeMbti(u.mbti) || '');
-                return `<li>
+                return `<li class="makgora-rank-item" data-uid="${u.id}" data-nick="${nicknameLabel}" data-mbti="${mbtiLabel}" style="cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                     <span class="rank-badge rank-${i+1}">${medal}</span>
                     <span class="rank-nick">${nicknameLabel} <small style="color:#888;">${mbtiLabel}</small></span>
                     <span class="rank-score">🏆${u.wins}승 <small>${wr}%</small></span>
                 </li>`;
             }).join('');
+
+            // 프로필 열기 클릭 이벤트 부여
+            list.querySelectorAll('.makgora-rank-item').forEach(li => {
+                li.addEventListener('click', () => {
+                    const uid = li.getAttribute('data-uid');
+                    const nick = li.getAttribute('data-nick');
+                    const mbti = li.getAttribute('data-mbti');
+                    if (window.ProfileAPI && uid) {
+                        window.ProfileAPI.openUserProfile(uid, nick, mbti);
+                    }
+                });
+            });
         } catch (e) {
             list.innerHTML = '<li style="color:#888;text-align:center;">오류가 발생했습니다</li>';
         }

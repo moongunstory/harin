@@ -200,6 +200,8 @@ window.FirebaseAPI = {
         // Firebase 실제 연동: Users 노드에 유저 등록
         const userRef = db.ref(`Users/${userId}`);
         const snapshot = await userRef.once('value');
+        const nicknameLower = nickname.toLowerCase().replace(/\s+/g, '');
+        
         if (!snapshot.exists()) {
             userRef.set({
                 nickname: nickname,
@@ -208,8 +210,17 @@ window.FirebaseAPI = {
                 clicks: { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 },
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             });
+            db.ref(`Nicknames/${nicknameLower}`).set(userId);
         } else {
             // 이미 있으면 닉네임/MBTI만 업데이트
+            const oldData = snapshot.val();
+            if (oldData.nickname && oldData.nickname !== nickname) {
+                const oldNickLower = oldData.nickname.toLowerCase().replace(/\s+/g, '');
+                db.ref(`Nicknames/${oldNickLower}`).remove();
+                db.ref(`Nicknames/${nicknameLower}`).set(userId);
+            } else if (!oldData.nickname) {
+                db.ref(`Nicknames/${nicknameLower}`).set(userId);
+            }
             userRef.update({
                 nickname: nickname,
                 mbti_type: mbtiType || ''
@@ -250,8 +261,6 @@ window.FirebaseAPI = {
         nickname = window.SecurityUtils.sanitizeNickname(nickname);
         mbtiType = window.SecurityUtils.sanitizeMbti(mbtiType);
         text = window.SecurityUtils.sanitizeChatMessage(text);
-        if (!userId || nickname === 'Guest') return;
-        if (!nickname || !text) return;
         
         if (!db) {
             // Mock 모드 동작
@@ -262,11 +271,27 @@ window.FirebaseAPI = {
             mockData.listeners.global.forEach(cb => cb('mock_' + Date.now() + Math.random(), msg));
             return;
         }
+        
+        if (!userId || !nickname || !text) return;
 
-        const chatRef = db.ref('GlobalChat').push();
-        chatRef.set({
+        const chatRef = db.ref('GlobalChat');
+        chatRef.push({
             userId, nickname, mbtiType: mbtiType || '', text,
             timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            // 프론트엔드 기반 실시간 가비지 컬렉터 (약 300개 한도 유지)
+            // 매 전송 시가 아닌 약 10%의 확률로 백그라운드 청소를 수행하여 트래픽 최적화
+            if (Math.random() < 0.1) {
+                chatRef.once('value', snap => {
+                    const count = snap.numChildren();
+                    if (count > 300) {
+                        const excess = count - 300;
+                        chatRef.orderByChild('timestamp').limitToFirst(excess).once('value', oldSnap => {
+                            oldSnap.forEach(child => child.ref.remove());
+                        });
+                    }
+                });
+            }
         });
     },
 

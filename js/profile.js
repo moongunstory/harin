@@ -352,7 +352,7 @@ window.ProfileAPI = {
         this.myProfileModal.classList.remove('hidden');
     },
 
-    saveMyProfile: function() {
+    saveMyProfile: async function() {
         const newName = this.myNameInput.value.trim();
         const newMbti = this.myMbtiSelect.value;
         const bioInput = document.getElementById('my-profile-bio-input');
@@ -364,6 +364,18 @@ window.ProfileAPI = {
         }
 
         const userId = localStorage.getItem('mbti_userid');
+
+        // 중복 검사
+        if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+            const db = window.firebase.database();
+            const nicknameLower = newName.toLowerCase().replace(/\s+/g, '');
+            const snap = await db.ref(`Nicknames/${nicknameLower}`).once('value');
+            if (snap.exists() && snap.val() !== userId) {
+                alert("🛑 이미 사용 중인 닉네임이에요.");
+                return;
+            }
+        }
+
         localStorage.setItem('mbti_nickname', newName);
         localStorage.setItem('mbti_type', newMbti);
         localStorage.setItem('mbti_bio', newBio);
