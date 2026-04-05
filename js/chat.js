@@ -216,7 +216,7 @@ window.ChatUI = {
         }
 
         const dmMsgList = document.getElementById('dm-msg-list');
-        dmMsgList.innerHTML = '<div style="color:#aaa;font-size:0.8rem;text-align:center;padding:20px 0;">Firebase 연동 시 귓속말 내역이 여기에 표시됩니다.</div>';
+        dmMsgList.innerHTML = '';
     },
 
     sendDM: function() {
@@ -312,6 +312,7 @@ window.ChatUI = {
 
     setupIdleUI: function() {
         this.matchStatusArea.classList.remove('hidden');
+        this.matchStatusArea.style.display = 'flex';
         this.matchChatArea.classList.add('hidden');
         this.btnStartMatch.innerText = "매칭 시작";
         this.btnStartMatch.classList.remove('waiting');
@@ -320,6 +321,7 @@ window.ChatUI = {
 
     setupWaitingUI: function() {
         this.matchStatusArea.classList.remove('hidden');
+        this.matchStatusArea.style.display = 'flex';
         this.matchChatArea.classList.add('hidden');
         this.btnStartMatch.innerText = "대기중... (클릭 시 취소)";
         this.btnStartMatch.classList.add('waiting');
@@ -333,6 +335,8 @@ window.ChatUI = {
         
         // UI 변경
         this.matchStatusArea.classList.add('hidden');
+        this.matchStatusArea.style.display = 'none'; // 강제 숨김 보장
+        this.matchStatusText.innerText = "";
         this.matchChatArea.classList.remove('hidden');
         
         this.matchPartnerName.innerText = partnerName || '익명';

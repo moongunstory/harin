@@ -69,6 +69,12 @@ window.ProfileAPI = {
         
         // TODO: Whisper
         if(this.btnUpWhisper) this.btnUpWhisper.addEventListener('click', () => {
+            const friends = JSON.parse(localStorage.getItem('mbti_friends') || '[]');
+            if (!friends.find(f => f.id === this.currentSelectedUserId)) {
+                alert("친구가 되어야 귓속말을 보낼 수 있습니다.");
+                return;
+            }
+            
             // 친구 탭의 DM으로 연결
             const modal = document.getElementById('user-profile-modal');
             if(modal) modal.classList.add('hidden');
@@ -290,15 +296,15 @@ window.ProfileAPI = {
             db.ref(`makgoraStats/${userId}`).once('value').then(snap => {
                 const data = snap.val() || {wins:0, losses:0, draws:0};
                 const total = data.wins + data.losses + data.draws;
-                const drawText = data.draws ? `, ${data.draws} Draws` : '';
-                const recordText = `${total} Matches, ${data.wins} Wins, ${data.losses} Losses${drawText}`;
+                const drawText = data.draws ? ` ${data.draws}무` : '';
+                const recordText = `${total}전 ${data.wins}승 ${data.losses}패${drawText}`;
                 let statsEl = document.getElementById('my-makgora-record-display');
                 if(statsEl) {
-                    statsEl.innerHTML = `Record: <span style="color:#ff6b6b; font-weight:bold;">${recordText}</span>`;
+                    statsEl.style.display = 'none';
                 }
                 const historyBtn = document.getElementById('btn-show-makgora-history');
                 if(historyBtn) {
-                    historyBtn.innerText = recordText;
+                    historyBtn.innerText = `⚔️ ${recordText} (10전 전적 보기)`;
                 }
             });
 
