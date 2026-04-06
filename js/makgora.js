@@ -652,14 +652,29 @@ window.MakgoraAPI = (() => {
         if (!db) return;
         const ref = db.ref(`makgoraStats/${userId}`);
         ref.once('value', snap => {
-            const prev = snap.val() || { wins: 0, losses: 0, draws: 0 };
+            const prev = snap.val() || { wins: 0, losses: 0, draws: 0, winStreak: 0 };
+
+            let newStreak = 0;
+            if (won) {
+                newStreak = (prev.winStreak || 0) + 1;
+            } else if (!draw) {
+                newStreak = 0;
+            } else {
+                newStreak = prev.winStreak || 0;
+            }
+
             ref.set({
                 wins: prev.wins + (won ? 1 : 0),
                 losses: prev.losses + (!won && !draw ? 1 : 0),
                 draws: prev.draws + (draw ? 1 : 0),
+                winStreak: newStreak,
                 nickname: localStorage.getItem('mbti_nickname') || '익명',
                 mbti: localStorage.getItem('mbti_type') || '',
             });
+
+            if (newStreak >= 5 && window.AchievementAPI) {
+                window.AchievementAPI.unlock('makgora_win_5');
+            }
         });
 
         // 상대 전적 업데이트 (Head To Head)
