@@ -319,6 +319,9 @@ window.MakgoraAPI = (() => {
                 if (!isMock && !isBot && rivalId && state.roomId) {
                     const db = window.firebase?.apps?.length ? window.firebase.database() : null;
                     if (db) {
+                        // 이전 승부의 기권 잔재 치우기
+                        db.ref(`MakgoraRooms/${state.roomId}/forfeit`).remove();
+
                         const myIdForForfeit = localStorage.getItem('mbti_userid');
                         state.roomForfeitRef = db.ref(`MakgoraRooms/${state.roomId}/forfeit`);
                         state.roomForfeitRef.on('value', snap => {
@@ -638,8 +641,6 @@ window.MakgoraAPI = (() => {
         if (resultDesc) resultDesc.textContent = desc;
         if (resultEl) resultEl.style.display = 'flex';
 
-        if (state.rivalForfeited) return; // 상대 기권 시 상대 클라이언트가 내 전적/기록까지 DB에 반영하므로, 중복 카운팅 방지
-
         saveMakgoraResult(won, draw);
     }
 
@@ -685,7 +686,7 @@ window.MakgoraAPI = (() => {
             isBot: state.isBot || false,
             result: result,
             winnerHP: winnerHP,
-            forfeit: !!state.forfeit,
+            forfeit: !!state.forfeit || !!state.rivalForfeited,
             timestamp: Date.now()
         }).then(() => {
             // 최신 10개만 유지
@@ -700,38 +701,6 @@ window.MakgoraAPI = (() => {
             });
         });
 
-        // 상대방 관점 전적(1승 및 기록) 교차 업데이트 (특히 기권 시)
-        if (state.forfeit && !state.isBot && state.rivalId) {
-            const rivalRef = db.ref(`makgoraStats/${state.rivalId}`);
-            rivalRef.once('value', snap => {
-                const prev = snap.val() || { wins: 0, losses: 0, draws: 0 };
-                rivalRef.update({
-                    wins: prev.wins + 1
-                });
-            });
-
-            // 상대방의 History에도 내 패배(상대방 승리)를 강제 주입
-            const rivalHistoryRef = db.ref(`makgoraHistory/${state.rivalId}`);
-            rivalHistoryRef.push({
-                rivalId: userId,
-                rivalName: localStorage.getItem('mbti_nickname') || '익명',
-                isBot: false,
-                result: 'win', // 상대 입장에서는 승리
-                winnerHP: state.rivalHP,
-                forfeit: true, // 기권승 기록
-                timestamp: Date.now()
-            }).then(() => {
-                rivalHistoryRef.once('value', allSnap => {
-                    if (allSnap.numChildren() > 10) {
-                        let oldest = null;
-                        allSnap.forEach(child => {
-                            if (!oldest || child.val().timestamp < oldest.val().timestamp) oldest = child;
-                        });
-                        if (oldest) oldest.ref.remove();
-                    }
-                });
-            });
-        }
     }
 
     // ── 유틸 함수들 ───────────────────────

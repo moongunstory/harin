@@ -32,7 +32,7 @@
     <meta name="twitter:image" content="https://mbti-harin.web.app/assets/MBTI/standard.webp">
 
     <!-- 성능: CSS 미리 로드 -->
-    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="css/style.css?v=6" as="style">
     <link rel="preload" href="assets/MBTI/standard.webp" as="image" type="image/webp">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap"
         as="style">
@@ -42,8 +42,26 @@
 
     <!-- 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/animations.css?v=6">
+
+    <!-- 기존 서비스워커 찌꺼기 완벽 제거 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister().then(() => {
+                        console.log('Orphaned Service Worker unregistered');
+                    });
+                }
+            });
+            caches.keys().then(function(cacheNames) {
+                cacheNames.forEach(function(cacheName) {
+                    caches.delete(cacheName);
+                });
+            });
+        }
+    </script>
 
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8728622705804576"
@@ -879,17 +897,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
     <!-- SoundFX/SoundManager: 다른 모듈이 의존하므로 defer 없이 순서 보장 -->
-    <script src="js/SoundFX.js?v=5"></script>
-    <script src="js/SoundManager.js?v=5"></script>
-    <script src="js/security.js?v=5" defer></script>
-    <script src="js/firebase.js?v=5" defer></script>
-    <script src="js/profile.js?v=5" defer></script>
-    <script src="js/chat.js?v=5" defer></script>
-    <script src="js/clicker.js?v=5" defer></script>
-    <script src="js/ui.js?v=5" defer></script>
-    <script src="js/achievements.js?v=5" defer></script>
-    <script src="js/makgora.js?v=5" defer></script>
-    <script src="js/main.js?v=5" defer></script>
+    <script src="js/SoundFX.js?v=6"></script>
+    <script src="js/SoundManager.js?v=6"></script>
+    <script src="js/security.js?v=6" defer></script>
+    <script src="js/firebase.js?v=6" defer></script>
+    <script src="js/profile.js?v=6" defer></script>
+    <script src="js/chat.js?v=6" defer></script>
+    <script src="js/clicker.js?v=6" defer></script>
+    <script src="js/ui.js?v=6" defer></script>
+    <script src="js/achievements.js?v=6" defer></script>
+    <script src="js/makgora.js?v=6" defer></script>
+    <script src="js/main.js?v=6" defer></script>
 
     <!-- 슈퍼챗 월드 메시지 리스너 -->
     <script>

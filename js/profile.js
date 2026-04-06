@@ -672,9 +672,10 @@ window.ProfileAPI = {
                 const statusLabel = h.result === 'win' ? '승리' : h.result === 'draw' ? '무승부' : '패배';
                 const statusColor = h.result === 'win' ? '#43e97b' : h.result === 'draw' ? '#f6c90e' : '#ff6b6b';
                 const rivalDisplay = h.isBot ? `${h.rivalName} (봇)` : h.rivalName;
+                
                 const scoreLine = h.result === 'draw'
                     ? `무승부 — 양쪽 모두 ${h.winnerHP || 0} HP로 종료`
-                    : `${h.result === 'win' ? '승자' : '패자'} 체력 ${h.winnerHP || 0} HP`;
+                    : `승자 체력 ${h.winnerHP || 0} HP`;
                 const subtitleText = h.forfeit ? (h.result === 'win' ? '기권 승' : '기권 패') : scoreLine;
                 const date = new Date(h.timestamp);
                 const dateText = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
