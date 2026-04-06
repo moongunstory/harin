@@ -22,23 +22,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const errEl = document.getElementById('nickname-error');
 
         // 매 시도마다 에러 메시지 초기화
-        if(errEl) errEl.innerText = "";
+        if (errEl) errEl.innerText = "";
 
         if (!input && !selectedMbti) {
-            if(errEl) errEl.innerText = "🛑 닉네임과 MBTI를 모두 입력해주세요!";
+            if (errEl) errEl.innerText = "🛑 닉네임과 MBTI를 모두 입력해주세요!";
             return;
         } else if (!input) {
-            if(errEl) errEl.innerText = "🛑 닉네임을 입력해주세요!";
+            if (errEl) errEl.innerText = "🛑 닉네임을 입력해주세요!";
             return;
         } else if (!selectedMbti) {
-            if(errEl) errEl.innerText = "🛑 내 MBTI를 선택해주세요!";
+            if (errEl) errEl.innerText = "🛑 내 MBTI를 선택해주세요!";
             return;
         }
 
         nickname = security.sanitizeNickname(input);
         mbtiType = security.sanitizeMbti(selectedMbti);
         if (!nickname) {
-            if(errEl) errEl.innerText = "🛑 2자 이상의 한글/영문/숫자만 가능해요.";
+            if (errEl) errEl.innerText = "🛑 2자 이상의 한글/영문/숫자만 가능해요.";
             return;
         }
 
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const nicknameLower = nickname.toLowerCase().replace(/\s+/g, '');
             const snap = await db.ref(`Nicknames/${nicknameLower}`).once('value');
             if (snap.exists()) {
-                if(errEl) errEl.innerText = "🛑 이미 사용 중인 닉네임이에요.";
+                if (errEl) errEl.innerText = "🛑 이미 사용 중인 닉네임이에요.";
                 return;
             }
         }
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.UI.updateIllustration) window.UI.updateIllustration(window.ClickerAPI.getState());
 
     // 실시간 스탯 리스너
-    if(window.FirebaseAPI.listenToGlobalStats) {
+    if (window.FirebaseAPI.listenToGlobalStats) {
         window.FirebaseAPI.listenToGlobalStats((globalStats) => {
             window.ClickerAPI.initLocalState(globalStats);
             const axes = ['ei', 'sn', 'tf', 'jp'];
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = btn.closest('.mbti-row');
             const axis = row.dataset.axis;
             const type = btn.dataset.type;
-            
+
             if (window.soundManager) window.soundManager.playMbtiClick(type);
             const emoji = btn.querySelector('.icon').innerText;
 
@@ -151,14 +151,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.UI.updateGauge(axis, newState.left, newState.right);
             window.UI.updateTotalClicks(window.ClickerAPI.getState());
             if (window.UI.updateIllustration) window.UI.updateIllustration(window.ClickerAPI.getState());
-            
+
             // 업적 체크
             if (window.AchievementAPI) window.AchievementAPI.recordClick(type);
         });
     });
 
     // 4. 랭킹 메인 3탭 전환
-    const rankMainTabs  = document.querySelectorAll('.rank-main-tab');
+    const rankMainTabs = document.querySelectorAll('.rank-main-tab');
     const rankMainPanels = document.querySelectorAll('.rank-main-panel');
     rankMainTabs.forEach(tab => {
         tab.addEventListener('click', async () => {
@@ -176,8 +176,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // MBTI 서브탭 전환
-    const mbtiSubTabs   = document.querySelectorAll('.mbti-sub-tabs .rank-tab');
-    const mbtiPanels    = document.querySelectorAll('#rank-main-mbti .rank-panel');
+    const mbtiSubTabs = document.querySelectorAll('.mbti-sub-tabs .rank-tab');
+    const mbtiPanels = document.querySelectorAll('#rank-main-mbti .rank-panel');
     mbtiSubTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             mbtiSubTabs.forEach(t => t.classList.remove('active'));
@@ -200,15 +200,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             list.innerHTML = data.slice(0, 20).map((u, i) => {
-                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
                 const wr = u.wins + u.losses + u.draws > 0
                     ? Math.round(u.wins / (u.wins + u.losses + u.draws) * 100) : 0;
                 const nicknameLabel = security.escapeHtml(security.sanitizeNickname(u.nickname) || '익명');
                 const mbtiLabel = security.escapeHtml(security.sanitizeMbti(u.mbti) || '');
                 return `<li class="makgora-rank-item" data-uid="${u.id}" data-nick="${nicknameLabel}" data-mbti="${mbtiLabel}" style="cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
-                    <span class="rank-badge rank-${i+1}">${medal}</span>
+                    <span class="rank-badge rank-${i + 1}">${medal}</span>
                     <span class="rank-nick">${nicknameLabel} <small style="color:#888;">${mbtiLabel}</small></span>
-                    <span class="rank-score">🏆${u.wins}승 <small>${wr}%</small></span>
+                    <span class="rank-score">🏆${u.wins}승 💀${u.losses}패<small>${wr}%</small></span>
                 </li>`;
             }).join('');
 
@@ -290,16 +290,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let isShared = false;
 
                 try {
-                    switch(snsType) {
+                    switch (snsType) {
                         case 'kakao':
                             // 카카오톡은 API Key 없이 웹에서 바로 열기 어려우므로, 
-                        // 기기의 기본 공유 창(navigator.share)을 띄워서 카톡을 선택하게 유도
-                        if (navigator.share) {
-                            await navigator.share(shareData);
-                        } else {
-                            await copyToClipboard(shareData.url);
-                            alert("기기에서 직접 공유를 지원하지 않아 링크가 복사되었습니다!\n카카오톡에 붙여넣기 해주세요.");
-                        }
+                            // 기기의 기본 공유 창(navigator.share)을 띄워서 카톡을 선택하게 유도
+                            if (navigator.share) {
+                                await navigator.share(shareData);
+                            } else {
+                                await copyToClipboard(shareData.url);
+                                alert("기기에서 직접 공유를 지원하지 않아 링크가 복사되었습니다!\n카카오톡에 붙여넣기 해주세요.");
+                            }
                             isShared = true;
                             break;
                         case 'twitter':
@@ -309,8 +309,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         case 'facebook':
                             // 페이스북은 로컬(localhost) URL을 공유하려고 하면 서버가 긁어갈 수 없어 에러가 납니다.
                             // 실제 도메인에 올라가면 정상 작동합니다. (개발 중엔 임시로 구글로 테스트)
-                            const fbUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' 
-                                ? encodeURIComponent('https://mbti-harin.web.app') 
+                            const fbUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
+                                ? encodeURIComponent('https://mbti-harin.web.app')
                                 : encodedUrl;
                             window.open(`https://www.facebook.com/sharer/sharer.php?u=${fbUrl}`, '_blank');
                             isShared = true;
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const indicator = document.getElementById('buff-indicator');
         const timerSpan = document.getElementById('buff-timer');
         if (indicator) indicator.style.display = 'block';
-        
+
         if (btnShare) {
             btnShare.disabled = true;
             btnShare.innerText = "✨ 공유 버프 활성화 중!";
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
             if (timerSpan) timerSpan.innerText = `${m}:${s}`;
-            
+
             if (timeLeft <= 0) {
                 clearInterval(buffTimer);
                 window.ClickerAPI.shareBuffMultiplier = 1;

@@ -849,7 +849,10 @@ window.MakgoraAPI = (() => {
             const snap = await db.ref('makgoraStats').orderByChild('wins').limitToLast(30).once('value');
             if (!snap.exists()) return [];
             const list = [];
-            snap.forEach(child => list.unshift({ id: child.key, ...child.val() }));
+            snap.forEach(child => {
+                list.unshift({ id: child.key, ...child.val() });
+                return false;
+            });
             return list;
         },
 
