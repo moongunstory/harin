@@ -7,42 +7,42 @@
     "ignore": [
       "firebase.json",
       "database.rules.json",
-      "**/.git/**",
-      "**/scripts/**",
-      "**/*.py",
-      "**/*.md"
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ],
     "headers": [
       {
-        "source": "**/*.@(webp|png|jpg|jpeg|gif|svg|ico)",
+        "source": "index.html",
         "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          }
         ]
       },
       {
-        "source": "**/*.@(css|js)",
+        "source": "donate.html",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
-        ]
-      },
-      {
-        "source": "**/*.html",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
-          { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-        ]
-      },
-      {
-        "source": "ads.txt",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=86400" },
-          { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+          {
+            "key": "X-Frame-Options",
+            "value": "ALLOWALL"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors *"
+          }
         ]
       }
-    ],
-    "cleanUrls": true,
-    "trailingSlash": false
+    ]
   }
 }

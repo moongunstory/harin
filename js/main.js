@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // 페이스북은 로컬(localhost) URL을 공유하려고 하면 서버가 긁어갈 수 없어 에러가 납니다.
                             // 실제 도메인에 올라가면 정상 작동합니다. (개발 중엔 임시로 구글로 테스트)
                             const fbUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' 
-                                ? encodeURIComponent('https://harin-mbti.web.app') 
+                                ? encodeURIComponent('https://mbti-harin.web.app') 
                                 : encodedUrl;
                             window.open(`https://www.facebook.com/sharer/sharer.php?u=${fbUrl}`, '_blank');
                             isShared = true;

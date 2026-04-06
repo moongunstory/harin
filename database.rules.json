@@ -114,6 +114,7 @@
     },
     "makgoraStats": {
       ".read": true,
+      ".indexOn": ["wins"],
       "$uid": {
         ".write": "auth != null"
       }
