@@ -203,8 +203,8 @@
         }
 
         .step-emoji {
-            width: 56px;
-            height: 56px;
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -722,19 +722,18 @@
                     } else {
                         marker.style.cssText = `position:absolute; left:${pct}%; top:30px; transform:translate(-50%, -50%); width:24px; height:24px; border-radius:50%; background:#222; border:2px solid #555; display:flex; align-items:center; justify-content:center; z-index:10; transition:all 0.3s;`;
                     }
-                    marker.innerHTML = `<img src="${m.icon}" style="width:14px; height:14px; object-fit:contain; filter:grayscale(1) opacity(0.6);" id="marker-img-${i}">`;
+                    marker.innerHTML = `<img src="${m.icon}" style="width:14px; height:14px; object-fit:contain;" id="marker-img-${i}">`;
                     track.appendChild(marker);
                 }
 
                 // 마카롱(index 0)은 원본이 작으므로 1.2x 적용
-                const imgSize = (i === 0) ? '52px' : '44px';
+                const imgSize = (i === 0) ? '76px' : '68px';
 
                 return `
                 <div class="milestone-step" id="step-${i}" style="margin-bottom:12px;">
                     <div class="step-emoji" id="step-emoji-${i}">
                         <img src="${m.icon}" id="step-icon-${i}"
-                             style="width:${imgSize}; height:${imgSize}; object-fit:contain;
-                                    filter:grayscale(1) opacity(0.45); transition:filter 0.4s;">
+                             style="width:${imgSize}; height:${imgSize}; object-fit:contain; transition:transform 0.4s;">
                     </div>
                     <div class="step-label" style="flex:1;">
                         <strong style="font-size:0.95rem; color:#ddd;"><span id="check-${i}" style="color:#888; margin-right:6px;">○</span>${m.name}</strong><br>
@@ -782,10 +781,8 @@
                         marker.style.background = 'rgba(67, 233, 123, 0.2)';
                         marker.style.boxShadow = '0 0 10px rgba(67, 233, 123, 0.5)';
                     }
-                    if (markerImg) markerImg.style.filter = 'none';
                     if (tick) { tick.style.background = '#43e97b'; tick.style.boxShadow = '0 0 5px #43e97b'; }
-                    // 달성: 이미지 풀컬러, 이모지박스 초록 테두리, 체크 표시
-                    if (stepIcon) stepIcon.style.filter = 'none';
+                    // 달성: 이모지박스 초록 테두리, 체크 표시
                     if (stepEmoji) stepEmoji.style.background = 'rgba(67, 233, 123, 0.12)';
                     if (stepCheck) stepCheck.textContent = '✓';
                 } else {
@@ -796,10 +793,7 @@
                         marker.style.background = '#222';
                         marker.style.boxShadow = 'none';
                     }
-                    if (markerImg) markerImg.style.filter = 'grayscale(1) opacity(0.6)';
                     if (tick) { tick.style.background = 'rgba(255,255,255,0.4)'; tick.style.boxShadow = 'none'; }
-                    // 미달성: 이미지 흑백
-                    if (stepIcon) stepIcon.style.filter = 'grayscale(1) opacity(0.45)';
                     if (stepEmoji) stepEmoji.style.background = 'rgba(255, 255, 255, 0.06)';
                     if (stepCheck) stepCheck.textContent = '·';
                 }

@@ -6,10 +6,10 @@
 
 window.MakgoraAPI = (() => {
     // ── 상수 ──────────────────────────────
-    const MAX_TURNS   = 10;
-    const INIT_HP     = 10;
-    const BASE_DMG    = 2;
-    const ACCEL_TURN  = 5;   // 이 턴부터 데미지 +1
+    const MAX_TURNS = 10;
+    const INIT_HP = 10;
+    const BASE_DMG = 2;
+    const ACCEL_TURN = 5;   // 이 턴부터 데미지 +1
     const TURN_TIMEOUT = 8;  // 초 (서든데스 시 타임아웃)
     const SUDDEN_TIMEOUT = 5;
 
@@ -51,18 +51,18 @@ window.MakgoraAPI = (() => {
     let matchQueueCountdown = null;
     let matchQueueTimer = null;
     let inviteModal, inviteText, acceptBtn, declineBtn;
-    
+
     // ── 봇 매칭 이름 ──────────────────────
-    const BOT_NAMES = ['알파고', '딥블루', '심심이', '이루다', 'ChatGPT', 'Antigravity'];
+    const BOT_NAMES = ['하린', '민지', '다연', '수빈', '지수', '유종'];
 
     // ── 유틸 ──────────────────────────────
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     function $(id) { return document.getElementById(id); }
     function actionName(a) {
-        return { charge:'돌진(E)', parry:'간파(N)', store:'축적(I)' }[a] || a;
+        return { charge: '돌진(E)', parry: '간파(N)', store: '축적(I)' }[a] || a;
     }
     function actionEmoji(a) {
-        return { charge:'🟥', parry:'🟦', store:'🟨', control:'🟧' }[a] || '';
+        return { charge: '🟥', parry: '🟦', store: '🟨', control: '🟧' }[a] || '';
     }
 
     // ── 인앱 토스트 알림 ──────────────────
@@ -95,34 +95,34 @@ window.MakgoraAPI = (() => {
 
     // ── DOM 캐시 ──────────────────────────
     function cacheDOM() {
-        overlay      = $('makgora-overlay');
-        resultEl     = $('makgora-result');
-        resultIcon   = $('makgora-result-icon');
-        resultTitle  = $('makgora-result-title');
-        resultDesc   = $('makgora-result-desc');
-        finishBtn    = $('btn-makgora-finish');
-        myNameEl     = $('makgora-my-name');
-        rivalNameEl  = $('makgora-rival-name');
-        myHpEl       = $('makgora-my-hp');
-        rivalHpEl    = $('makgora-rival-hp');
-        myHpBar      = $('makgora-my-hp-bar');
-        rivalHpBar   = $('makgora-rival-hp-bar');
-        turnLabel    = $('makgora-turn-label');
-        maxTurnsEl   = $('makgora-max-turns');
-        statusBox    = $('makgora-status-box');
-        logBox       = $('makgora-log');
-        buffLabel    = $('makgora-buff-label');
-        banLabel     = $('makgora-ban-label');
-        timerEl      = $('makgora-timer');
-        actionBtns   = $('makgora-action-btns');
-        banSelect    = $('makgora-ban-select');
-        suddenLabel  = $('makgora-sudden-label');
-        inviteModal  = $('makgora-invite-modal');
-        inviteText   = $('makgora-invite-text');
-        acceptBtn    = $('btn-makgora-accept');
-        declineBtn   = $('btn-makgora-decline');
+        overlay = $('makgora-overlay');
+        resultEl = $('makgora-result');
+        resultIcon = $('makgora-result-icon');
+        resultTitle = $('makgora-result-title');
+        resultDesc = $('makgora-result-desc');
+        finishBtn = $('btn-makgora-finish');
+        myNameEl = $('makgora-my-name');
+        rivalNameEl = $('makgora-rival-name');
+        myHpEl = $('makgora-my-hp');
+        rivalHpEl = $('makgora-rival-hp');
+        myHpBar = $('makgora-my-hp-bar');
+        rivalHpBar = $('makgora-rival-hp-bar');
+        turnLabel = $('makgora-turn-label');
+        maxTurnsEl = $('makgora-max-turns');
+        statusBox = $('makgora-status-box');
+        logBox = $('makgora-log');
+        buffLabel = $('makgora-buff-label');
+        banLabel = $('makgora-ban-label');
+        timerEl = $('makgora-timer');
+        actionBtns = $('makgora-action-btns');
+        banSelect = $('makgora-ban-select');
+        suddenLabel = $('makgora-sudden-label');
+        inviteModal = $('makgora-invite-modal');
+        inviteText = $('makgora-invite-text');
+        acceptBtn = $('btn-makgora-accept');
+        declineBtn = $('btn-makgora-decline');
         waitingOverlay = $('makgora-waiting-overlay');
-        waitingMsg     = $('makgora-waiting-msg');
+        waitingMsg = $('makgora-waiting-msg');
         waitingTimerEl = $('makgora-waiting-timer');
     }
 
@@ -176,11 +176,11 @@ window.MakgoraAPI = (() => {
 
     // ── HP 바 업데이트 ────────────────────
     function updateHpUI() {
-        if (myHpEl)   myHpEl.textContent   = Math.max(0, state.myHP);
+        if (myHpEl) myHpEl.textContent = Math.max(0, state.myHP);
         if (rivalHpEl) rivalHpEl.textContent = Math.max(0, state.rivalHP);
-        const myPct    = Math.max(0, (state.myHP   / INIT_HP) * 100);
+        const myPct = Math.max(0, (state.myHP / INIT_HP) * 100);
         const rivalPct = Math.max(0, (state.rivalHP / INIT_HP) * 100);
-        if (myHpBar)    myHpBar.style.width    = myPct    + '%';
+        if (myHpBar) myHpBar.style.width = myPct + '%';
         if (rivalHpBar) rivalHpBar.style.width = rivalPct + '%';
         if (buffLabel) buffLabel.textContent = state.myBuffed ? '✨ 축적 중' : '없음';
     }
@@ -208,15 +208,15 @@ window.MakgoraAPI = (() => {
     // ── 행동 버튼 상태 갱신 ───────────────
     function refreshActionButtons() {
         const h = state.myActionHistory || [];
-        const banAct = (h.length >= 2 && h[h.length-1] === h[h.length-2]) ? h[h.length-1] : null;
+        const banAct = (h.length >= 2 && h[h.length - 1] === h[h.length - 2]) ? h[h.length - 1] : null;
 
         document.querySelectorAll('.mg-btn').forEach(btn => {
             const act = btn.dataset.action;
             btn.disabled = false;
-            
+
             // 상태 켜져있지 않으면 무조건 끄기
             if (!state.active) btn.disabled = true;
-            
+
             // 3연속 같은 카드 선택 방지
             if (act === banAct) {
                 btn.disabled = true;
@@ -275,12 +275,12 @@ window.MakgoraAPI = (() => {
         };
 
         const myNick = localStorage.getItem('mbti_nickname') || '나';
-        if (myNameEl)   myNameEl.textContent   = myNick;
+        if (myNameEl) myNameEl.textContent = myNick;
         if (rivalNameEl) rivalNameEl.textContent = state.rivalName;
-        if (maxTurnsEl)  maxTurnsEl.textContent  = MAX_TURNS;
+        if (maxTurnsEl) maxTurnsEl.textContent = MAX_TURNS;
         if (suddenLabel) suddenLabel.style.display = 'none';
-        if (resultEl)    resultEl.style.display = 'none';
-        if (logBox)      logBox.textContent = '게임 시작! 첫 번째 턴입니다.';
+        if (resultEl) resultEl.style.display = 'none';
+        if (logBox) logBox.textContent = '게임 시작! 첫 번째 턴입니다.';
 
         updateHpUI();
         overlay.style.display = 'flex';
@@ -329,6 +329,7 @@ window.MakgoraAPI = (() => {
                             if (data && data.by && data.by !== myIdForForfeit) {
                                 state.rivalHP = 0;
                                 state.myHP = Math.max(state.myHP, 1);
+                                state.rivalForfeited = true;
                                 endBattle();
                             }
                         });
@@ -404,18 +405,18 @@ window.MakgoraAPI = (() => {
     // ── 봇 AI ─────────────────────────────
     function botChoose() {
         let choices = ['charge', 'parry', 'store'];
-        
+
         // 3연속 제한 적용
         const h = state.rivalActionHistory || [];
-        if (h.length >= 2 && h[h.length-1] === h[h.length-2]) {
-            choices = choices.filter(c => c !== h[h.length-1]);
+        if (h.length >= 2 && h[h.length - 1] === h[h.length - 2]) {
+            choices = choices.filter(c => c !== h[h.length - 1]);
         }
 
         // 간단 전략: HP 낮으면 공격 편중
         if (state.rivalHP <= 4 && choices.includes('charge')) {
-            choices = choices.map(c => c === 'charge' ? ['charge','charge'] : [c]).flat();
+            choices = choices.map(c => c === 'charge' ? ['charge', 'charge'] : [c]).flat();
         }
-        
+
         const pick = choices[Math.floor(Math.random() * choices.length)];
         return { action: pick };
     }
@@ -438,25 +439,25 @@ window.MakgoraAPI = (() => {
             `;
         }
         setStatus('⚔️ 서로의 선택이 공개되었습니다!');
-        
+
         // 공개 상태 유지를 위한 1.8초 딜레이
         await sleep(1800);
         if (clashText) clashText.style.display = 'none';
 
         // 히스토리 추가
-        if(!state.myActionHistory) state.myActionHistory = [];
-        if(!state.rivalActionHistory) state.rivalActionHistory = [];
+        if (!state.myActionHistory) state.myActionHistory = [];
+        if (!state.rivalActionHistory) state.rivalActionHistory = [];
         state.myActionHistory.push(myAct);
         state.rivalActionHistory.push(rivalAct);
 
         // 데미지 계산용 기본값 (후반 가속 적용)
         const accel = state.turn >= ACCEL_TURN ? 1 : 0;
         const suddenMult = state.isSudden ? 2 : 1;
-        let baseDmg   = (BASE_DMG + accel) * suddenMult;
-        let parryDmg  = Math.ceil(baseDmg * 1.5);
+        let baseDmg = (BASE_DMG + accel) * suddenMult;
+        let parryDmg = Math.ceil(baseDmg * 1.5);
         let storedDmg = baseDmg * 2;
 
-        let myDmgDealt   = 0; // 내가 받는 데미지
+        let myDmgDealt = 0; // 내가 받는 데미지
         let rivalDmgDealt = 0; // 상대가 받는 데미지
         let logs = [];
 
@@ -468,28 +469,25 @@ window.MakgoraAPI = (() => {
         if (myAct === 'charge' && rivalAct === 'charge') {
             const d = state.myBuffed ? storedDmg : baseDmg;
             const rd = state.rivalBuffed ? storedDmg : baseDmg;
-            myDmgDealt   = rd; 
-            rivalDmgDealt = d; 
+            myDmgDealt = rd;
+            rivalDmgDealt = d;
             logs.push(`⚔️ 직진 vs 직진 — 서로 ${d}/${rd} 데미지`);
         }
         // 내 직진 vs 상대 간파
         else if (myAct === 'charge' && rivalAct === 'parry') {
-            // 버프 있어도 간파 반사는 기본 데미지 기준 (버프가 간파에 역이용되지 않음)
-            const baseAtk = baseDmg;
-            const riMult = state.rivalBuffed ? 2 : 1;
-            const reflected = Math.ceil(baseAtk * 1.5) * riMult;
+            // 거울 반사 시 상대방(가해자)의 버프 상태를 기준으로 배율 결정
+            const reflected = Math.ceil(baseDmg * 1.5) * (state.rivalBuffed ? 2 : 1);
             myDmgDealt = reflected;
             if (state.myBuffed) {
-                logs.push(`🟦 상대 간파! 축적한 힘이 흡수됩니다. ${reflected} 반사 데미지`);
+                logs.push(`🟦 상대 간파! 축적한 힘이 헛수고가 되었습니다! ${reflected} 통렬한 반사 데미지`);
             } else {
                 logs.push(`🟦 상대 간파 성공! ${reflected} 통렬한 반사 데미지를 받았습니다`);
             }
         }
         // 내 간파 vs 상대 직진
         else if (myAct === 'parry' && rivalAct === 'charge') {
-            const rivalAtk = state.rivalBuffed ? storedDmg : baseDmg;
-            const riMult = state.myBuffed ? 2 : 1;
-            const reflected = Math.ceil(rivalAtk * 1.5) * riMult;
+            // 거울 반사 시 내(가해자) 버프 상태를 기준으로 배율 결정
+            const reflected = Math.ceil(baseDmg * 1.5) * (state.myBuffed ? 2 : 1);
             rivalDmgDealt = reflected;
             logs.push(`🟦 간파 성공! ${reflected} 통렬한 반사 데미지를 돌려줍니다`);
         }
@@ -528,7 +526,7 @@ window.MakgoraAPI = (() => {
         state.rivalBuffed = willRivalBuff;
 
         // [Phase 2: 이펙트와 함께 데미지 적용]
-        state.myHP   -= myDmgDealt;
+        state.myHP -= myDmgDealt;
         state.rivalHP -= rivalDmgDealt;
 
         // 흔들림 및 플로팅 콜
@@ -565,7 +563,7 @@ window.MakgoraAPI = (() => {
         state.myAction = null;
         state.myBanTarget = null;
         state.turn++;
-        if (highHpMatch()) endBattle(); 
+        if (highHpMatch()) endBattle();
         else beginTurn();
     }
 
@@ -613,24 +611,34 @@ window.MakgoraAPI = (() => {
             }
         }
 
-        if (draw) {
-            icon  = '🤝'; title = '무승부!';
-            desc  = `${state.myHP} vs ${state.rivalHP} HP — 막상막하였습니다!`;
+        if (state.forfeit) {
+            icon = '💀'; title = '기권 패배';
+            desc = '아쉽지만 기권하셨습니다.';
+            if (window.soundManager) window.soundManager.playDefeat();
+        } else if (state.rivalForfeited) {
+            icon = '🏆'; title = '기권 승리!';
+            desc = '상대방이 기권하여 승리했습니다!';
+            if (window.soundManager) window.soundManager.playVictory();
+        } else if (draw) {
+            icon = '🤝'; title = '무승부!';
+            desc = `${state.myHP} vs ${state.rivalHP} HP — 막상막하였습니다!`;
             if (window.soundManager) window.soundManager.playClick();
         } else if (won) {
-            icon  = '🏆'; title = '승리!';
-            desc  = `HP ${state.myHP} 남아 — ${state.rivalName}을/를 꺾었습니다!`;
+            icon = '🏆'; title = '승리!';
+            desc = `HP ${state.myHP} 남아 — ${state.rivalName}을/를 꺾었습니다!`;
             if (window.soundManager) window.soundManager.playVictory();
         } else {
-            icon  = '💀'; title = '패배...';
-            desc  = `HP ${state.myHP} 남아 — ${state.rivalName}에게 졌습니다.`;
+            icon = '💀'; title = '패배...';
+            desc = `HP ${state.myHP} 남아 — ${state.rivalName}에게 졌습니다.`;
             if (window.soundManager) window.soundManager.playDefeat();
         }
 
-        if (resultIcon)  resultIcon.textContent  = icon;
+        if (resultIcon) resultIcon.textContent = icon;
         if (resultTitle) resultTitle.textContent = title;
-        if (resultDesc)  resultDesc.textContent  = desc;
-        if (resultEl)    resultEl.style.display  = 'flex';
+        if (resultDesc) resultDesc.textContent = desc;
+        if (resultEl) resultEl.style.display = 'flex';
+
+        if (state.rivalForfeited) return; // 상대 기권 시 상대 클라이언트가 내 전적/기록까지 DB에 반영하므로, 중복 카운팅 방지
 
         saveMakgoraResult(won, draw);
     }
@@ -643,13 +651,13 @@ window.MakgoraAPI = (() => {
         if (!db) return;
         const ref = db.ref(`makgoraStats/${userId}`);
         ref.once('value', snap => {
-            const prev = snap.val() || { wins:0, losses:0, draws:0 };
+            const prev = snap.val() || { wins: 0, losses: 0, draws: 0 };
             ref.set({
-                wins:   prev.wins   + (won  ? 1 : 0),
+                wins: prev.wins + (won ? 1 : 0),
                 losses: prev.losses + (!won && !draw ? 1 : 0),
-                draws:  prev.draws  + (draw ? 1 : 0),
+                draws: prev.draws + (draw ? 1 : 0),
                 nickname: localStorage.getItem('mbti_nickname') || '익명',
-                mbti:     localStorage.getItem('mbti_type')     || '',
+                mbti: localStorage.getItem('mbti_type') || '',
             });
         });
 
@@ -658,7 +666,7 @@ window.MakgoraAPI = (() => {
         if (rivalId && !state.isBot) {
             const h2hRef = db.ref(`HeadToHead/${userId}/${rivalId}`);
             h2hRef.once('value', snap => {
-                const prev = snap.val() || { wins:0, losses:0, draws:0 };
+                const prev = snap.val() || { wins: 0, losses: 0, draws: 0 };
                 h2hRef.set({
                     wins: prev.wins + (won ? 1 : 0),
                     losses: prev.losses + (!won && !draw ? 1 : 0),
@@ -672,13 +680,13 @@ window.MakgoraAPI = (() => {
         const winnerHP = won ? Math.max(state.myHP, state.rivalHP) : (draw ? state.myHP : state.rivalHP);
         const historyRef = db.ref(`makgoraHistory/${userId}`);
         historyRef.push({
-            rivalId:    state.rivalId   || null,
-            rivalName:  state.rivalName || '상대방',
-            isBot:      state.isBot     || false,
-            result:     result,
-            winnerHP:   winnerHP,
-            forfeit:    !!state.forfeit,
-            timestamp:  Date.now()
+            rivalId: state.rivalId || null,
+            rivalName: state.rivalName || '상대방',
+            isBot: state.isBot || false,
+            result: result,
+            winnerHP: winnerHP,
+            forfeit: !!state.forfeit,
+            timestamp: Date.now()
         }).then(() => {
             // 최신 10개만 유지
             historyRef.once('value', allSnap => {
@@ -696,7 +704,7 @@ window.MakgoraAPI = (() => {
         if (state.forfeit && !state.isBot && state.rivalId) {
             const rivalRef = db.ref(`makgoraStats/${state.rivalId}`);
             rivalRef.once('value', snap => {
-                const prev = snap.val() || { wins:0, losses:0, draws:0 };
+                const prev = snap.val() || { wins: 0, losses: 0, draws: 0 };
                 rivalRef.update({
                     wins: prev.wins + 1
                 });
@@ -800,7 +808,7 @@ window.MakgoraAPI = (() => {
 
             // ── 초대 전송 ──────────────────────────────────
             db.ref(`MakgoraInvites/${rivalId}`).set({
-                fromId:   myId,
+                fromId: myId,
                 fromName: localStorage.getItem('mbti_nickname') || '익명',
                 timestamp: Date.now()
             });
@@ -927,7 +935,7 @@ window.MakgoraAPI = (() => {
                 // 큐에 누군가 추가될 때마다 감지
                 db.ref('MakgoraQueue').on('value', snap => {
                     if (!matchQueueRef) return; // 내가 큐를 취소했거나 매칭 완료된 상태면 무시
-                    
+
                     let rival = null;
                     snap.forEach(child => {
                         if (child.key !== myId && !rival) {
@@ -943,7 +951,7 @@ window.MakgoraAPI = (() => {
                         db.ref('MakgoraQueue').off('value'); // 리스너 해제
 
                         clearInterval(matchQueueCountdown);
-                        
+
                         if (btn) {
                             btn.innerText = '⚔️ 1vs1 매칭';
                             btn.style.background = 'linear-gradient(135deg, #ff0844, #ffb199)';
@@ -953,7 +961,7 @@ window.MakgoraAPI = (() => {
                             banner.style.opacity = '0';
                             banner.style.pointerEvents = 'none';
                         }
-                        
+
                         // ※ 실제로는 서로가 동시에 remove를 시도할 수 있지만 
                         // Firebase 특성상 먼저 실행된 클라이언트가 우선 처리되며,
                         // 임의로 상대를 rival로 지정하고 Battle에 진입합니다.
@@ -966,7 +974,7 @@ window.MakgoraAPI = (() => {
             matchQueueCountdown = setInterval(() => {
                 timeElapsed++;
                 if (timerSpan) timerSpan.innerText = `${timeElapsed}초`;
-                
+
                 // 타겟 시간에 도달하면 봇과 매칭
                 if (timeElapsed >= randomTarget) {
                     clearInterval(matchQueueCountdown);

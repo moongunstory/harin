@@ -1653,3 +1653,25 @@ header {
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
+
+/* ════════════════════════════════════════
+   막고라 모바일 레이아웃 최적화
+════════════════════════════════════════ */
+.makgora-overlay-container {
+    flex-direction: row;
+}
+
+@media (max-width: 768px) {
+    .makgora-overlay-container {
+        flex-direction: column !important;
+        overflow-y: auto;
+    }
+    
+    #makgora-rules-panel {
+        width: 100% !important;
+        max-width: none !important;
+        border-left: none !important;
+        border-top: 1px solid rgba(255,255,255,0.1) !important;
+        padding: 20px !important;
+    }
+}

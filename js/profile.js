@@ -4,13 +4,13 @@
  */
 
 window.ProfileAPI = {
-    init: function() {
+    init: function () {
         this.cacheDOM();
         this.bindEvents();
         this.initStorage();
     },
 
-    cacheDOM: function() {
+    cacheDOM: function () {
         // My Profile
         this.btnMyProfile = document.getElementById('btn-my-profile');
         this.myProfileModal = document.getElementById('my-profile-modal');
@@ -27,7 +27,7 @@ window.ProfileAPI = {
         this.upNickname = document.getElementById('up-nickname');
         this.upMbti = document.getElementById('up-mbti');
         this.upStats = document.getElementById('up-stats');
-        
+
         // Buttons
         this.btnUpWhisper = document.getElementById('btn-up-whisper');
         this.btnUpFriend = document.getElementById('btn-up-friend');
@@ -37,11 +37,11 @@ window.ProfileAPI = {
         this.closeButtons = document.querySelectorAll('.close-modal-btn');
     },
 
-    bindEvents: function() {
-        if(this.btnMyProfile) {
+    bindEvents: function () {
+        if (this.btnMyProfile) {
             this.btnMyProfile.addEventListener('click', () => this.openMyProfile());
         }
-        if(this.btnSaveMyProfile) {
+        if (this.btnSaveMyProfile) {
             this.btnSaveMyProfile.addEventListener('click', () => this.saveMyProfile());
         }
 
@@ -51,47 +51,47 @@ window.ProfileAPI = {
                 document.getElementById(targetId).classList.add('hidden');
             });
         });
-        
-        if(this.btnUpBlock) this.btnUpBlock.addEventListener('click', () => this.blockUser(this.currentSelectedUserId));
-        if(this.btnUpFriend) this.btnUpFriend.addEventListener('click', () => this.toggleFriend(this.currentSelectedUserId, this.currentSelectedUserName));
-        
+
+        if (this.btnUpBlock) this.btnUpBlock.addEventListener('click', () => this.blockUser(this.currentSelectedUserId));
+        if (this.btnUpFriend) this.btnUpFriend.addEventListener('click', () => this.toggleFriend(this.currentSelectedUserId, this.currentSelectedUserName));
+
         // 내 프로필 - 친구 목록
         const btnFriends = document.getElementById('btn-show-friends');
-        if(btnFriends) btnFriends.addEventListener('click', () => {
+        if (btnFriends) btnFriends.addEventListener('click', () => {
             this.openFriendsModal();
         });
 
         // 내 프로필 - 차단 목록
         const btnBlocked = document.getElementById('btn-show-blocked');
-        if(btnBlocked) btnBlocked.addEventListener('click', () => {
+        if (btnBlocked) btnBlocked.addEventListener('click', () => {
             this.openBlockedModal();
         });
-        
+
         // TODO: Whisper
-        if(this.btnUpWhisper) this.btnUpWhisper.addEventListener('click', () => {
+        if (this.btnUpWhisper) this.btnUpWhisper.addEventListener('click', () => {
             const friends = JSON.parse(localStorage.getItem('mbti_friends') || '[]');
             if (!friends.find(f => f.id === this.currentSelectedUserId)) {
                 alert("친구가 되어야 귓속말을 보낼 수 있습니다.");
                 return;
             }
-            
+
             // 친구 탭의 DM으로 연결
             const modal = document.getElementById('user-profile-modal');
-            if(modal) modal.classList.add('hidden');
-            if(window.ChatUI) {
+            if (modal) modal.classList.add('hidden');
+            if (window.ChatUI) {
                 window.ChatUI.switchTab('friends');
                 window.ChatUI.openDM(this.currentSelectedUserId, this.currentSelectedUserName);
                 // 채팅 사이드바 열기
                 const sidebar = document.getElementById('chat-sidebar');
-                if(sidebar) sidebar.classList.add('open');
+                if (sidebar) sidebar.classList.add('open');
             }
         });
 
         // 막고라 신청
-        if(this.btnUpMakgora) this.btnUpMakgora.addEventListener('click', () => {
+        if (this.btnUpMakgora) this.btnUpMakgora.addEventListener('click', () => {
             const modal = document.getElementById('user-profile-modal');
-            if(modal) modal.classList.add('hidden');
-            if(window.MakgoraAPI) {
+            if (modal) modal.classList.add('hidden');
+            if (window.MakgoraAPI) {
                 window.MakgoraAPI.challenge(this.currentSelectedUserId, this.currentSelectedUserName);
             } else {
                 alert('막고라 시스템 로딩 중입니다. 잠시 후 다시 시도해주세요.');
@@ -100,12 +100,12 @@ window.ProfileAPI = {
 
         // 업적 버튼 (헤더)
         const btnAch = document.getElementById('btn-achievements');
-        if(btnAch) btnAch.addEventListener('click', () => this.openAchievementModal());
+        if (btnAch) btnAch.addEventListener('click', () => this.openAchievementModal());
 
         // 랜덤 1vs1 막고라 버튼 (헤더) 
         const btnRandomMakgora = document.getElementById('btn-random-makgora');
-        if(btnRandomMakgora) btnRandomMakgora.addEventListener('click', () => { 
-            if(window.MakgoraAPI) window.MakgoraAPI.startMatchQueue();
+        if (btnRandomMakgora) btnRandomMakgora.addEventListener('click', () => {
+            if (window.MakgoraAPI) window.MakgoraAPI.startMatchQueue();
         });
 
         // 10판 전적 보기 버튼
@@ -119,7 +119,7 @@ window.ProfileAPI = {
         // ⋮ 더보기 메뉴 토글 (DM)
         const btnDmMore = document.getElementById('btn-dm-more');
         const dmMoreMenu = document.getElementById('dm-more-menu');
-        if(btnDmMore && dmMoreMenu) {
+        if (btnDmMore && dmMoreMenu) {
             btnDmMore.addEventListener('click', (e) => {
                 e.stopPropagation();
                 dmMoreMenu.classList.toggle('hidden');
@@ -129,7 +129,7 @@ window.ProfileAPI = {
         // ⋮ 더보기 메뉴 토글 (1:1 매칭)
         const btnMatchMore = document.getElementById('btn-match-more');
         const matchMoreMenu = document.getElementById('match-more-menu');
-        if(btnMatchMore && matchMoreMenu) {
+        if (btnMatchMore && matchMoreMenu) {
             btnMatchMore.addEventListener('click', (e) => {
                 e.stopPropagation();
                 matchMoreMenu.classList.toggle('hidden');
@@ -138,70 +138,70 @@ window.ProfileAPI = {
 
         // 외부 클릭 시 메뉴 닫기
         document.addEventListener('click', () => {
-            if(dmMoreMenu) dmMoreMenu.classList.add('hidden');
-            if(matchMoreMenu) matchMoreMenu.classList.add('hidden');
+            if (dmMoreMenu) dmMoreMenu.classList.add('hidden');
+            if (matchMoreMenu) matchMoreMenu.classList.add('hidden');
         });
 
         // DM AppBar - 프로필 버튼들
         const btnDmProfile = document.getElementById('btn-dm-profile');
-        if(btnDmProfile) btnDmProfile.addEventListener('click', () => {
-            if(dmMoreMenu) dmMoreMenu.classList.add('hidden');
-            if(this.currentDmUserId) this.openUserProfile(this.currentDmUserId, this.currentDmUserName);
+        if (btnDmProfile) btnDmProfile.addEventListener('click', () => {
+            if (dmMoreMenu) dmMoreMenu.classList.add('hidden');
+            if (this.currentDmUserId) this.openUserProfile(this.currentDmUserId, this.currentDmUserName);
         });
 
         const btnDmMakgora = document.getElementById('btn-dm-makgora');
-        if(btnDmMakgora) btnDmMakgora.addEventListener('click', () => {
-            if(dmMoreMenu) dmMoreMenu.classList.add('hidden');
-            if(this.currentDmUserId && window.MakgoraAPI) {
+        if (btnDmMakgora) btnDmMakgora.addEventListener('click', () => {
+            if (dmMoreMenu) dmMoreMenu.classList.add('hidden');
+            if (this.currentDmUserId && window.MakgoraAPI) {
                 window.MakgoraAPI.challenge(this.currentDmUserId, this.currentDmUserName);
             }
         });
 
         const btnDmBlock = document.getElementById('btn-dm-block');
-        if(btnDmBlock) btnDmBlock.addEventListener('click', () => {
-            if(dmMoreMenu) dmMoreMenu.classList.add('hidden');
-            if(this.currentDmUserId) this.blockUser(this.currentDmUserId);
+        if (btnDmBlock) btnDmBlock.addEventListener('click', () => {
+            if (dmMoreMenu) dmMoreMenu.classList.add('hidden');
+            if (this.currentDmUserId) this.blockUser(this.currentDmUserId);
         });
 
         // DM 상단 이름 클릭 → 프로필
         const dmPartnerBtn = document.getElementById('dm-partner-profile-btn');
-        if(dmPartnerBtn) dmPartnerBtn.addEventListener('click', () => {
-            if(this.currentDmUserId) this.openUserProfile(this.currentDmUserId, this.currentDmUserName);
+        if (dmPartnerBtn) dmPartnerBtn.addEventListener('click', () => {
+            if (this.currentDmUserId) this.openUserProfile(this.currentDmUserId, this.currentDmUserName);
         });
 
         // 1:1 매칭 AppBar - 프로필 버튼들
         const btnMatchProfile = document.getElementById('btn-match-profile');
-        if(btnMatchProfile) btnMatchProfile.addEventListener('click', () => {
-            if(matchMoreMenu) matchMoreMenu.classList.add('hidden');
-            if(this.currentMatchUserId) this.openUserProfile(this.currentMatchUserId, this.currentMatchUserName);
+        if (btnMatchProfile) btnMatchProfile.addEventListener('click', () => {
+            if (matchMoreMenu) matchMoreMenu.classList.add('hidden');
+            if (this.currentMatchUserId) this.openUserProfile(this.currentMatchUserId, this.currentMatchUserName);
         });
 
         const btnMatchBlock = document.getElementById('btn-match-block');
-        if(btnMatchBlock) btnMatchBlock.addEventListener('click', () => {
-            if(matchMoreMenu) matchMoreMenu.classList.add('hidden');
-            if(this.currentMatchUserId) this.blockUser(this.currentMatchUserId);
+        if (btnMatchBlock) btnMatchBlock.addEventListener('click', () => {
+            if (matchMoreMenu) matchMoreMenu.classList.add('hidden');
+            if (this.currentMatchUserId) this.blockUser(this.currentMatchUserId);
         });
 
         // 1:1 매칭 상단 이름 클릭 → 프로필
         const matchPartnerBtn = document.getElementById('match-partner-profile-btn');
-        if(matchPartnerBtn) matchPartnerBtn.addEventListener('click', () => {
-            if(this.currentMatchUserId) this.openUserProfile(this.currentMatchUserId, this.currentMatchUserName);
+        if (matchPartnerBtn) matchPartnerBtn.addEventListener('click', () => {
+            if (this.currentMatchUserId) this.openUserProfile(this.currentMatchUserId, this.currentMatchUserName);
         });
     },
 
-    initStorage: function() {
+    initStorage: function () {
         if (!localStorage.getItem('mbti_blocked')) localStorage.setItem('mbti_blocked', JSON.stringify([]));
         if (!localStorage.getItem('mbti_equipped_title')) localStorage.setItem('mbti_equipped_title', '');
 
         // 더이상 더미 친구 데이터를 삽입하지 않습니다 (친구봇 삭제).
     },
 
-    openAchievementModal: function() {
+    openAchievementModal: function () {
         const modal = document.getElementById('achievement-modal');
         const listEl = document.getElementById('achievement-list-full');
-        if(!modal || !listEl) return;
+        if (!modal || !listEl) return;
 
-        if(!window.AchievementAPI) {
+        if (!window.AchievementAPI) {
             listEl.innerHTML = '<p style="color:#aaa">업적 시스템 로딩 중...</p>';
         } else {
             const all = window.AchievementAPI.getAll();
@@ -261,7 +261,7 @@ window.ProfileAPI = {
         modal.classList.remove('hidden');
     },
 
-    openMyProfile: function() {
+    openMyProfile: function () {
         const userId = localStorage.getItem('mbti_userid');
         const nickname = localStorage.getItem('mbti_nickname');
         const mbti = localStorage.getItem('mbti_type');
@@ -277,13 +277,13 @@ window.ProfileAPI = {
         this.myNickSpan.innerText = nickname;
         this.myMbtiSpan.innerText = mbti || '미설정';
         this.myTitleSpan.innerText = title;
-        
+
         this.myNameInput.value = nickname;
-        if(mbti) this.myMbtiSelect.value = mbti;
+        if (mbti) this.myMbtiSelect.value = mbti;
 
         // bio 로드
         const bioInput = document.getElementById('my-profile-bio-input');
-        if(bioInput) bioInput.value = bio;
+        if (bioInput) bioInput.value = bio;
 
         // 업적 목록 렌더링
         this._renderMyAchievements();
@@ -291,47 +291,47 @@ window.ProfileAPI = {
         // 막고라 전적 렌더링 + 최근 10판
         if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
             const db = window.firebase.database();
-            
+
             // 1. 전체 전적
             db.ref(`makgoraStats/${userId}`).once('value').then(snap => {
-                const data = snap.val() || {wins:0, losses:0, draws:0};
-                const w = data.wins   || 0;
+                const data = snap.val() || { wins: 0, losses: 0, draws: 0 };
+                const w = data.wins || 0;
                 const l = data.losses || 0;
-                const d = data.draws  || 0;
+                const d = data.draws || 0;
                 const total = w + l + d;
                 const drawText = d ? ` ${d}무` : '';
                 const recordText = total > 0
                     ? `${total}전 ${w}승 ${l}패${drawText}`
                     : '전적 없음';
                 let statsEl = document.getElementById('my-makgora-record-display');
-                if(statsEl) { statsEl.style.display = 'none'; }
+                if (statsEl) { statsEl.style.display = 'none'; }
                 const historyBtn = document.getElementById('btn-show-makgora-history');
-                if(historyBtn) {
-                    historyBtn.innerText = `⚔️ ${recordText} (10전 전적 보기)`;
+                if (historyBtn) {
+                    historyBtn.innerText = `⚔️ ${recordText}`;
                 }
             });
 
             // 2. 최근 10개 기록
             db.ref(`makgoraHistory/${userId}`).orderByChild('timestamp').limitToLast(10).once('value').then(snap => {
                 const historyList = document.getElementById('my-makgora-history-list');
-                if(!historyList) return;
-                
+                if (!historyList) return;
+
                 if (!snap.exists()) {
                     historyList.innerHTML = '<div style="color:#aaa; font-size:0.8rem; text-align:center;">최근 막고라 전적이 없습니다.</div>';
                     return;
                 }
-                
+
                 const records = [];
                 snap.forEach(child => records.unshift(child.val())); // 최신순
-                
+
                 historyList.innerHTML = '';
                 records.forEach(r => {
                     const icon = r.result === 'win' ? '🏆' : r.result === 'draw' ? '🤝' : '💀';
                     const color = r.result === 'win' ? '#43e97b' : r.result === 'draw' ? '#f6c90e' : '#ff6b6b';
                     const botBadge = r.isBot ? '<span style="font-size:0.7rem; color:#aaa; margin-left:4px;">🤖</span>' : '';
                     const date = new Date(r.timestamp);
-                    const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2,'0')}`;
-                    
+                    const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+
                     const el = document.createElement('div');
                     el.style.cssText = `display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:4px; font-size:0.85rem;`;
                     el.innerHTML = `
@@ -341,7 +341,7 @@ window.ProfileAPI = {
                         <div style="color:${color}; font-weight:bold; width:40px; text-align:center;">${icon}</div>
                         <div style="font-size:0.7rem; color:#888; width:60px; text-align:right;">${dateStr}</div>
                     `;
-                    
+
                     if (!r.isBot) {
                         el.querySelector('.history-rival').addEventListener('click', () => {
                             window.ProfileAPI.openUserProfile(r.rivalId, r.rivalName);
@@ -355,13 +355,13 @@ window.ProfileAPI = {
         this.myProfileModal.classList.remove('hidden');
     },
 
-    saveMyProfile: async function() {
+    saveMyProfile: async function () {
         const newName = this.myNameInput.value.trim();
         const newMbti = this.myMbtiSelect.value;
         const bioInput = document.getElementById('my-profile-bio-input');
         const newBio = bioInput ? bioInput.value.trim() : '';
 
-        if(!newName) {
+        if (!newName) {
             alert("닉네임을 입력하세요.");
             return;
         }
@@ -403,17 +403,17 @@ window.ProfileAPI = {
         alert("프로필 정보가 수정되었습니다.");
     },
 
-    _renderMyAchievements: function() {
+    _renderMyAchievements: function () {
         // 동적으로 업적 섹션 삽입
         let achSection = document.getElementById('my-achievement-section');
-        if(!achSection) {
+        if (!achSection) {
             achSection = document.createElement('div');
             achSection.id = 'my-achievement-section';
             achSection.style.cssText = 'margin-top:15px; text-align:left;';
             this.btnSaveMyProfile.parentNode.insertBefore(achSection, this.btnSaveMyProfile.nextSibling.nextSibling);
         }
-        
-        if(!window.AchievementAPI) return;
+
+        if (!window.AchievementAPI) return;
         const all = window.AchievementAPI.getAll();
         const unlocked = all.filter(a => a.unlocked);
 
@@ -426,7 +426,7 @@ window.ProfileAPI = {
             </div>
             <div style="display:flex; flex-direction:column; gap:5px; max-height:220px; overflow-y:auto; padding-right:4px;">
                 ${normalAch.map(a => `
-                    <div onclick="window.ProfileAPI._equipAchievement('${a.id}')" style="cursor:${a.unlocked?'pointer':'default'}; padding:6px 10px; border-radius:8px; background:${a.unlocked?'rgba(246,201,14,0.12)':'rgba(255,255,255,0.03)'}; border:1px solid ${a.unlocked?'rgba(246,201,14,0.3)':'rgba(255,255,255,0.07)'}; display:flex; align-items:center; gap:8px; filter:${a.unlocked?'none':'grayscale(1) opacity(0.35)'};">
+                    <div onclick="window.ProfileAPI._equipAchievement('${a.id}')" style="cursor:${a.unlocked ? 'pointer' : 'default'}; padding:6px 10px; border-radius:8px; background:${a.unlocked ? 'rgba(246,201,14,0.12)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${a.unlocked ? 'rgba(246,201,14,0.3)' : 'rgba(255,255,255,0.07)'}; display:flex; align-items:center; gap:8px; filter:${a.unlocked ? 'none' : 'grayscale(1) opacity(0.35)'};">
                         <span style="font-size:0.95rem; white-space:nowrap;">${a.title}</span>
                         <span style="font-size:0.7rem; color:#aaa; flex:1;">${a.desc}</span>
                         ${a.unlocked ? '<span style="font-size:0.7rem;color:#f6c90e;white-space:nowrap;">장착</span>' : ''}
@@ -446,21 +446,21 @@ window.ProfileAPI = {
                 `).join('')}
             `;
         }
-        
+
         htmlString += `</div>`;
         achSection.innerHTML = htmlString;
     },
 
-    _equipAchievement: function(id) {
-        if(!window.AchievementAPI) return;
+    _equipAchievement: function (id) {
+        if (!window.AchievementAPI) return;
         const title = window.AchievementAPI.equipTitle(id);
-        if(title) {
-            if(this.myTitleSpan) this.myTitleSpan.innerText = title;
+        if (title) {
+            if (this.myTitleSpan) this.myTitleSpan.innerText = title;
             alert(`"${title}" 칭호를 장착했습니다!`);
         }
     },
 
-    openUserProfile: function(userId, fallbackName, fallbackMbti) {
+    openUserProfile: function (userId, fallbackName, fallbackMbti) {
         if (!userId) return;
         if (userId === localStorage.getItem('mbti_userid')) {
             this.openMyProfile();
@@ -469,20 +469,20 @@ window.ProfileAPI = {
 
         this.currentSelectedUserId = userId;
         this.currentSelectedUserName = fallbackName;
-        
+
         this.upNickname.innerText = fallbackName || '로딩중...';
         this.upMbti.innerText = fallbackMbti || '비공개';
         this.upTitle.innerText = '';
 
         // bio 초기화
         const upBio = document.getElementById('up-bio');
-        if(upBio) upBio.innerText = '';
+        if (upBio) upBio.innerText = '';
 
         this.upStats.innerHTML = '데이터 조회 중...';
-        
+
         // 차단/친구 상태 체크
         const blocked = JSON.parse(localStorage.getItem('mbti_blocked') || '[]');
-        if(blocked.includes(userId)) {
+        if (blocked.includes(userId)) {
             this.btnUpBlock.innerText = "차단 해제하기";
             this.btnUpBlock.style.color = '#fff';
             this.btnUpBlock.style.borderColor = '#fff';
@@ -491,9 +491,9 @@ window.ProfileAPI = {
             this.btnUpBlock.style.color = '#ff6b6b';
             this.btnUpBlock.style.borderColor = '#ff6b6b';
         }
-        
+
         const friends = JSON.parse(localStorage.getItem('mbti_friends') || '[]');
-        if(friends.find(f => f.id === userId)) {
+        if (friends.find(f => f.id === userId)) {
             this.btnUpFriend.innerText = "❌ 친구 삭제";
         } else {
             this.btnUpFriend.innerText = "➕ 친구 추가";
@@ -502,14 +502,14 @@ window.ProfileAPI = {
         this.userProfileModal.classList.remove('hidden');
 
         // Firebase 통계 가져오기
-        if(window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+        if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
             const db = window.firebase.database();
             const colors = window.mbtiColors || {
                 'E': '#FF5A5F', 'I': '#4A90E2', 'S': '#F5A623', 'N': '#9013FE',
                 'T': '#00B4D8', 'F': '#FB6F92', 'J': '#2ECC71', 'P': '#F39C12'
             };
             db.ref(`Users/${userId}`).once('value').then(snap => {
-                if(snap.exists()) {
+                if (snap.exists()) {
                     const data = snap.val();
                     this.upNickname.innerText = data.nickname;
                     this.upMbti.innerText = data.mbti_type || fallbackMbti;
@@ -517,28 +517,28 @@ window.ProfileAPI = {
                     if (upBio) {
                         upBio.innerText = data.bio || '한 줄 소개가 없습니다.';
                     }
-                    
+
                     const clicks = data.clicks || {};
                     const totalClicks = data.total_clicks ? data.total_clicks.toLocaleString() : 0;
                     const achievementCount = data.achievement_count != null ? `${data.achievement_count}개` : '비공개';
                     this.upStats.innerHTML = `
                         <div style="grid-column: 1 / -1; font-weight:bold; color:#fff; border-bottom:1px solid #444; padding-bottom:4px; margin-bottom:4px;">총 기여도: ${totalClicks} 번</div>
                         <div style="grid-column: 1 / -1; font-weight:bold; color:#f6c90e; margin-bottom:6px;">업적: ${achievementCount}</div>
-                        <div style="color:${colors['E']}">E: ${clicks.E||0}</div>
-                        <div style="color:${colors['I']}">I: ${clicks.I||0}</div>
-                        <div style="color:${colors['S']}">S: ${clicks.S||0}</div>
-                        <div style="color:${colors['N']}">N: ${clicks.N||0}</div>
-                        <div style="color:${colors['T']}">T: ${clicks.T||0}</div>
-                        <div style="color:${colors['F']}">F: ${clicks.F||0}</div>
-                        <div style="color:${colors['J']}">J: ${clicks.J||0}</div>
-                        <div style="color:${colors['P']}">P: ${clicks.P||0}</div>
+                        <div style="color:${colors['E']}">E: ${clicks.E || 0}</div>
+                        <div style="color:${colors['I']}">I: ${clicks.I || 0}</div>
+                        <div style="color:${colors['S']}">S: ${clicks.S || 0}</div>
+                        <div style="color:${colors['N']}">N: ${clicks.N || 0}</div>
+                        <div style="color:${colors['T']}">T: ${clicks.T || 0}</div>
+                        <div style="color:${colors['F']}">F: ${clicks.F || 0}</div>
+                        <div style="color:${colors['J']}">J: ${clicks.J || 0}</div>
+                        <div style="color:${colors['P']}">P: ${clicks.P || 0}</div>
                     `;
-                    
+
                     db.ref(`makgoraStats/${userId}`).once('value').then(mSnap => {
-                        const mData = mSnap.val() || {wins:0, losses:0, draws:0};
-                        const mW = mData.wins   || 0;
+                        const mData = mSnap.val() || { wins: 0, losses: 0, draws: 0 };
+                        const mW = mData.wins || 0;
                         const mL = mData.losses || 0;
-                        const mD = mData.draws  || 0;
+                        const mD = mData.draws || 0;
                         const mTotal = mW + mL + mD;
                         const mLabel = mTotal > 0
                             ? `${mTotal}전 ${mW}승 ${mL}패${mD ? ' ' + mD + '무' : ''}`
@@ -547,7 +547,7 @@ window.ProfileAPI = {
                             <div style="grid-column: 1 / -1; font-weight:bold; color:#ff6b6b; margin-top:6px; border-top:1px solid #444; padding-top:6px;">
                                 <button onclick="window.ProfileAPI.loadMakgoraHistory('${userId}')" style="background: linear-gradient(90deg, #ff0844, #ffb199); color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:800; width:100%;">⚔️ ${mLabel}</button>
                             </div>`;
-                        
+
                         const myId = localStorage.getItem('mbti_userid');
                         if (myId) {
                             db.ref(`HeadToHead/${myId}/${userId}`).once('value').then(hSnap => {
@@ -571,10 +571,10 @@ window.ProfileAPI = {
         }
     },
 
-    blockUser: function(userId) {
-        if(!userId) return;
+    blockUser: function (userId) {
+        if (!userId) return;
         let blocked = JSON.parse(localStorage.getItem('mbti_blocked') || '[]');
-        if(blocked.includes(userId)) {
+        if (blocked.includes(userId)) {
             blocked = blocked.filter(id => id !== userId);
             this.btnUpBlock.innerText = "🚫 차단하기";
             this.btnUpBlock.style.color = '#ff6b6b';
@@ -590,10 +590,10 @@ window.ProfileAPI = {
         localStorage.setItem('mbti_blocked', JSON.stringify(blocked));
     },
 
-    toggleFriend: function(userId, nickname) {
-        if(!userId) return;
+    toggleFriend: function (userId, nickname) {
+        if (!userId) return;
         let friends = JSON.parse(localStorage.getItem('mbti_friends') || '[]');
-        if(friends.find(f => f.id === userId)) {
+        if (friends.find(f => f.id === userId)) {
             friends = friends.filter(f => f.id !== userId);
             this.btnUpFriend.innerText = "➕ 친구 추가";
             alert("친구가 삭제되었습니다.");
@@ -610,13 +610,13 @@ window.ProfileAPI = {
         }
     },
 
-    openFriendsModal: function() {
+    openFriendsModal: function () {
         const modal = document.getElementById('friends-manage-modal');
         const listContainer = document.getElementById('friends-manage-list');
-        if(!modal || !listContainer) return;
+        if (!modal || !listContainer) return;
 
         const friends = JSON.parse(localStorage.getItem('mbti_friends') || '[]');
-        if(friends.length === 0) {
+        if (friends.length === 0) {
             listContainer.innerHTML = '<div style="color:#aaa; text-align:center; padding: 20px 0;">아직 친구가 없습니다.</div>';
         } else {
             listContainer.innerHTML = friends.map(f => `
@@ -632,13 +632,13 @@ window.ProfileAPI = {
         modal.classList.remove('hidden');
     },
 
-    openBlockedModal: function() {
+    openBlockedModal: function () {
         const modal = document.getElementById('blocked-manage-modal');
         const listContainer = document.getElementById('blocked-manage-list');
-        if(!modal || !listContainer) return;
+        if (!modal || !listContainer) return;
 
         const blocked = JSON.parse(localStorage.getItem('mbti_blocked') || '[]');
-        if(blocked.length === 0) {
+        if (blocked.length === 0) {
             listContainer.innerHTML = '<div style="color:#aaa; text-align:center; padding: 20px 0;">차단된 유저가 없습니다.</div>';
         } else {
             listContainer.innerHTML = blocked.map(id => `
@@ -651,14 +651,14 @@ window.ProfileAPI = {
         modal.classList.remove('hidden');
     },
 
-    removeBlockedUser: function(userId) {
+    removeBlockedUser: function (userId) {
         let blocked = JSON.parse(localStorage.getItem('mbti_blocked') || '[]');
         blocked = blocked.filter(id => id !== userId);
         localStorage.setItem('mbti_blocked', JSON.stringify(blocked));
         this.openBlockedModal(); // 리렌더링
     },
 
-    loadMakgoraHistory: function(userId) {
+    loadMakgoraHistory: function (userId) {
         const historyModal = document.getElementById('makgora-history-modal');
         const listEl = document.getElementById('my-makgora-history-list');
         if (!historyModal || !listEl) return;
@@ -672,13 +672,12 @@ window.ProfileAPI = {
                 const statusLabel = h.result === 'win' ? '승리' : h.result === 'draw' ? '무승부' : '패배';
                 const statusColor = h.result === 'win' ? '#43e97b' : h.result === 'draw' ? '#f6c90e' : '#ff6b6b';
                 const rivalDisplay = h.isBot ? `${h.rivalName} (봇)` : h.rivalName;
-                const forfeitLabel = h.forfeit ? (h.result === 'win' ? '기권 승' : '기권 패') : '';
                 const scoreLine = h.result === 'draw'
                     ? `무승부 — 양쪽 모두 ${h.winnerHP || 0} HP로 종료`
                     : `${h.result === 'win' ? '승자' : '패자'} 체력 ${h.winnerHP || 0} HP`;
-                const subtitleText = forfeitLabel ? `${forfeitLabel} · ${scoreLine}` : scoreLine;
+                const subtitleText = h.forfeit ? (h.result === 'win' ? '기권 승' : '기권 패') : scoreLine;
                 const date = new Date(h.timestamp);
-                const dateText = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2,'0')}`;
+                const dateText = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
 
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex; flex-direction:column; gap:8px; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; margin-bottom:10px; cursor:' + (h.rivalId && !h.isBot ? 'pointer' : 'default') + ';';
